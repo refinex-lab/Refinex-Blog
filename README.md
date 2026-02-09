@@ -42,26 +42,3 @@ npm run lint     # 代码检查
 ├── postcss.config.js
 └── vite.config.ts
 ```
-
-## Tailwind 配置
-
-已配置 `tailwind.config.js` 的 `content` 字段以扫描 `index.html` 与 `src` 目录下的源码。
-
-## 常见问题
-
-- **npm 缓存权限报错**
-  可使用项目内缓存目录：
-  ```bash
-  npm install --cache ./.npm-cache
-  ```
-  该目录已在 `.gitignore` 中忽略。
-
-## 下一步建议
-
-- 接入路由（如 React Router）
-- 增加博客文章数据层（Markdown / CMS）
-- 引入主题切换与搜索功能
-
----
-
-如需扩展页面结构或增加模块，请告诉我你的规划。

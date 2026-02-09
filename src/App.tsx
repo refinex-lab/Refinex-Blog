@@ -6,13 +6,20 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
-              Refinex Blog
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold text-slate-50">
-              前端技术博客
-            </h1>
+          <div className="flex items-center gap-4">
+            <img
+              src="/logo.svg"
+              alt="Refinex Blog logo"
+              className="h-10 w-10 rounded-full border border-slate-800 bg-slate-900 p-2"
+            />
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
+                Refinex Blog
+              </p>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-50">
+                前端技术博客
+              </h1>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button className="rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white">
