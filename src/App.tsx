@@ -1,4 +1,5 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Link, NavLink, Route, Routes } from "react-router-dom";
 import {
   ChevronDown,
   Github,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 import { siteConfig } from "./config/site";
 import { ThemeProvider, useTheme } from "./providers/theme";
+import { AboutPage } from "./pages/about/AboutPage";
+import { HomePage } from "./pages/home/HomePage";
 
 const ThemeToggle = () => {
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -88,8 +91,8 @@ const Header = () => {
     >
       <div className="flex w-full items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <a
-            href={siteConfig.logo.href}
+          <Link
+            to={siteConfig.logo.href}
             className="flex items-center gap-4"
             aria-label={`${siteConfig.title} 首页`}
           >
@@ -102,19 +105,25 @@ const Header = () => {
                 {siteConfig.subtitle}
               </p>
             </div>
-          </a>
+          </Link>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
           <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
             {siteConfig.nav.map((item) => (
-              <a
+              <NavLink
                 key={item.label}
-                href={item.href}
-                className="rounded-lg px-3 py-1 text-slate-600 transition-colors hover:bg-[var(--accent-color)] hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                to={item.href}
+                className={({ isActive }) =>
+                  `rounded-lg px-3 py-1 transition-colors ${
+                    isActive
+                      ? "bg-[var(--accent-color)] text-slate-900 dark:text-white"
+                      : "text-slate-600 hover:bg-[var(--accent-color)] hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                  }`
+                }
               >
                 {item.label}
-              </a>
+              </NavLink>
             ))}
           </nav>
 
@@ -136,12 +145,21 @@ const Header = () => {
               >
                 {siteConfig.menu.map((item) => (
                   <DropdownMenu.Item key={item.label} asChild>
-                    <a
-                      href={item.href}
-                      className="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-gray-800 dark:hover:text-white"
-                    >
-                      {item.label}
-                    </a>
+                    {item.href.startsWith("/") ? (
+                      <Link
+                        to={item.href}
+                        className="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.href}
+                        className="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                      >
+                        {item.label}
+                      </a>
+                    )}
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.Content>
@@ -162,29 +180,19 @@ const AppShell = () => {
   return (
     <div className="min-h-screen bg-[var(--page-bg)] text-slate-900 transition-colors duration-300 dark:text-slate-100">
       <Header />
-      <main className="mx-auto flex min-h-[calc(100vh-72px)] max-w-6xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6">
-        <section className="rounded-2xl border border-slate-200/70 bg-white/85 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#3a437a]/70">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-200">
-            Latest Draft
-          </p>
-          <h1 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
-            现代前端架构中的状态管理策略
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-100/80">
-            这里是主内容区域，占位用于后续接入文章列表、CMS 或路由内容。
-          </p>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-dashed border-slate-200/70 bg-white/60 p-6 text-sm text-slate-500 dark:border-white/10 dark:bg-[#3a437a]/50 dark:text-slate-100/70">
-            这里可以注入文章列表、标签筛选、分页等模块。
-          </div>
-          <aside className="rounded-2xl border border-slate-200/70 bg-[var(--accent-color)] p-6 text-sm text-slate-700 dark:border-white/10 dark:text-white">
-            右侧栏可以放置作者信息、近期文章或订阅入口。
-          </aside>
-        </section>
+      <main className="flex min-h-[calc(100vh-72px)] flex-1 flex-col">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
       </main>
-      <footer className="border-t border-black/5 bg-white/70 py-8 text-sm text-slate-500 backdrop-blur dark:border-white/10 dark:bg-[#424c87]/70 dark:text-slate-200">
+      <footer
+        className="border-t border-black/5 py-8 text-sm text-slate-500 backdrop-blur dark:border-white/10 dark:text-slate-200"
+        style={{
+          backgroundColor:
+            "color-mix(in srgb, var(--page-bg) 75%, transparent)",
+        }}
+      >
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <p className="font-medium text-slate-700 dark:text-white">

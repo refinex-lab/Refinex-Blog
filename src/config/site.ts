@@ -64,7 +64,7 @@ export const siteConfig: SiteConfig = {
   // 导航栏
   nav: [
     { label: "首页", href: "/" },
-    { label: "关于", href: "/" },
+    { label: "关于", href: "/about" },
   ],
   // 菜单
   menu: [
