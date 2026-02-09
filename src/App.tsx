@@ -88,15 +88,21 @@ const Header = () => {
     >
       <div className="flex w-full items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <LogoMark />
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-              {siteConfig.title}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {siteConfig.subtitle}
-            </p>
-          </div>
+          <a
+            href={siteConfig.logo.href}
+            className="flex items-center gap-4"
+            aria-label={`${siteConfig.title} 首页`}
+          >
+            <LogoMark />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                {siteConfig.title}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {siteConfig.subtitle}
+              </p>
+            </div>
+          </a>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
@@ -156,7 +162,7 @@ const AppShell = () => {
   return (
     <div className="min-h-screen bg-[var(--page-bg)] text-slate-900 transition-colors duration-300 dark:text-slate-100">
       <Header />
-      <main className="mx-auto flex min-h-[calc(100vh-72px)] max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
+      <main className="mx-auto flex min-h-[calc(100vh-72px)] max-w-6xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6">
         <section className="rounded-2xl border border-slate-200/70 bg-white/85 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#3a437a]/70">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-200">
             Latest Draft
@@ -178,6 +184,36 @@ const AppShell = () => {
           </aside>
         </section>
       </main>
+      <footer className="border-t border-black/5 bg-white/70 py-8 text-sm text-slate-500 backdrop-blur dark:border-white/10 dark:bg-[#424c87]/70 dark:text-slate-200">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <p className="font-medium text-slate-700 dark:text-white">
+              {siteConfig.footer.copyright}
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-300">
+              {siteConfig.footer.meta.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full bg-black/5 px-2 py-1 dark:bg-white/10"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            {siteConfig.footer.links.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

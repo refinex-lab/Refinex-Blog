@@ -90,7 +90,7 @@ export const siteConfig: SiteConfig = {
   },
   footer: {
     copyright: "© 2026 Refinex Blog. All rights reserved.",
-    meta: ["前端技术 · 架构思考 · 体验设计"],
+    meta: ["后端技术 · 架构思考 · 体验设计"],
     links: [
       { label: "隐私政策", href: "/" },
       { label: "使用条款", href: "/" },
