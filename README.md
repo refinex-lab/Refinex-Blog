@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# Refinex Blog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+基于 **React + TypeScript + Tailwind CSS + Radix UI** 的前端技术博客初始化项目。内置基础页面结构与 Radix Dialog 示例，便于快速二次开发。
 
-Currently, two official plugins are available:
+## 技术栈
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS v3
+- Radix UI (Dialog + Icons)
 
-## React Compiler
+## 快速开始
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+> 如遇 npm 缓存权限问题，可使用项目内缓存（见下方「常见问题」）。
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+访问浏览器提示的本地地址即可查看。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 常用脚本
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev      # 本地开发
+npm run build    # 生产构建
+npm run preview  # 预览构建产物
+npm run lint     # 代码检查
 ```
+
+## 目录结构
+
+```
+.
+├── index.html
+├── src
+│   ├── App.tsx        # 页面骨架与 Radix Dialog 示例
+│   ├── index.css      # Tailwind 入口与全局样式
+│   └── main.tsx       # 入口文件
+├── tailwind.config.js
+├── postcss.config.js
+└── vite.config.ts
+```
+
+## Tailwind 配置
+
+已配置 `tailwind.config.js` 的 `content` 字段以扫描 `index.html` 与 `src` 目录下的源码。
+
+## 常见问题
+
+- **npm 缓存权限报错**
+  可使用项目内缓存目录：
+  ```bash
+  npm install --cache ./.npm-cache
+  ```
+  该目录已在 `.gitignore` 中忽略。
+
+## 下一步建议
+
+- 接入路由（如 React Router）
+- 增加博客文章数据层（Markdown / CMS）
+- 引入主题切换与搜索功能
+
+---
+
+如需扩展页面结构或增加模块，请告诉我你的规划。
