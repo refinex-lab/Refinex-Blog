@@ -4,9 +4,6 @@ import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import "./index.css";
 import App from "./App.tsx";
-import { setupSystemTheme } from "./systemTheme";
-
-setupSystemTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

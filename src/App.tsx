@@ -1,129 +1,191 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import {
+  ChevronDown,
+  Github,
+  Library,
+  Moon,
+  MessageCircle,
+  Rss,
+  Sun,
+  Twitter,
+} from "lucide-react";
+import { siteConfig } from "./config/site";
+import { ThemeProvider, useTheme } from "./providers/theme";
 
-export default function App() {
+const ThemeToggle = () => {
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-          <div className="flex items-center gap-4">
-            <img
-              src="/logo.svg"
-              alt="Refinex Blog logo"
-              className="h-10 w-10 rounded-full border border-slate-800 bg-slate-900 p-2"
-            />
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
-                Refinex Blog
-              </p>
-              <h1 className="mt-2 text-2xl font-semibold text-slate-50">
-                前端技术博客
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white">
-              开始写作
-            </button>
-            <Dialog.Root>
-              <Dialog.Trigger asChild>
-                <button className="rounded-full bg-indigo-500 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400">
-                  关于本站
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/60" />
-                <Dialog.Content className="fixed left-1/2 top-1/2 w-[90vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-black/50">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <Dialog.Title className="text-lg font-semibold text-slate-50">
-                        关于 Refinex Blog
-                      </Dialog.Title>
-                      <Dialog.Description className="mt-2 text-sm leading-6 text-slate-300">
-                        以 React + TypeScript + Tailwind CSS + Radix UI 构建的
-                        前端技术博客初始化模板，聚焦在内容生产与工程化体验。
-                      </Dialog.Description>
-                    </div>
-                    <Dialog.Close asChild>
-                      <button
-                        className="rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
-                        aria-label="关闭"
-                      >
-                        <Cross2Icon />
-                      </button>
-                    </Dialog.Close>
-                  </div>
-                  <div className="mt-6 flex justify-end">
-                    <Dialog.Close asChild>
-                      <button className="rounded-full bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-600">
-                        知道了
-                      </button>
-                    </Dialog.Close>
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label="切换主题"
+      className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+    >
+      <Sun
+        className={`h-5 w-5 transition duration-300 ${
+          isDark ? "scale-0 rotate-90 opacity-0" : "scale-100 opacity-100"
+        }`}
+      />
+      <Moon
+        className={`absolute h-5 w-5 transition duration-300 ${
+          isDark ? "scale-100 opacity-100" : "scale-0 -rotate-90 opacity-0"
+        }`}
+      />
+    </button>
+  );
+};
+
+const LogoMark = () => {
+  if (siteConfig.logo.type === "image") {
+    return (
+      <img
+        src={siteConfig.logo.imageSrc}
+        alt={`${siteConfig.title} logo`}
+        className="h-9 w-auto"
+      />
+    );
+  }
+
+  return (
+    <span className="flex h-9 w-9 items-center justify-center text-[var(--accent-color)]">
+      <Library className="h-6 w-6" />
+    </span>
+  );
+};
+
+const iconMap = {
+  github: Github,
+  twitter: Twitter,
+  discord: MessageCircle,
+  rss: Rss,
+};
+
+const IconLink = ({ icon, label, href }: (typeof siteConfig.icons)[number]) => {
+  const Icon = iconMap[icon] ?? Github;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={label}
+      className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+    >
+      <Icon className="h-5 w-5" />
+    </a>
+  );
+};
+
+const Header = () => {
+  return (
+    <header
+      className="sticky top-0 z-50 border-b border-black/5 backdrop-blur dark:border-white/10"
+      style={{
+        backgroundColor:
+          "color-mix(in srgb, var(--page-bg) 75%, transparent)",
+      }}
+    >
+      <div className="flex w-full items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-4">
+          <LogoMark />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+              {siteConfig.title}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {siteConfig.subtitle}
+            </p>
           </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
-        <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                Latest Draft
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-50">
-                现代前端架构中的状态管理策略
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                以可维护性为核心，从 Zustand 到 Jotai，如何在团队规模与性能
-                约束之间找到最优解。
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2 text-xs text-slate-400">
-                <span className="rounded-full border border-slate-700 px-3 py-1">
-                  React 19
-                </span>
-                <span className="rounded-full border border-slate-700 px-3 py-1">
-                  TypeScript
-                </span>
-                <span className="rounded-full border border-slate-700 px-3 py-1">
-                  UX Patterns
-                </span>
-              </div>
-            </div>
-            <div className="rounded-2xl border border-dashed border-slate-800 p-6 text-sm text-slate-400">
-              下一步可以接入 CMS、评论系统与全文搜索。
-            </div>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
+            {siteConfig.nav.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="rounded-lg px-3 py-1 text-slate-600 transition-colors hover:bg-[var(--accent-color)] hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/70 px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-gray-800/70 dark:text-slate-200 dark:hover:bg-gray-900 dark:hover:text-white"
+              >
+                更多
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={8}
+                className="z-50 min-w-[180px] rounded-xl border border-slate-200/70 bg-white/95 p-2 shadow-lg shadow-slate-200/40 backdrop-blur dark:border-white/10 dark:bg-gray-900/95 dark:shadow-black/40"
+              >
+                {siteConfig.menu.map((item) => (
+                  <DropdownMenu.Item key={item.label} asChild>
+                    <a
+                      href={item.href}
+                      className="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                    >
+                      {item.label}
+                    </a>
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+
+          {siteConfig.icons.map((item) => (
+            <IconLink key={item.label} {...item} />
+          ))}
+          {siteConfig.theme.enableToggle ? <ThemeToggle /> : null}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+const AppShell = () => {
+  return (
+    <div className="min-h-screen bg-[var(--page-bg)] text-slate-900 transition-colors duration-300 dark:text-slate-100">
+      <Header />
+      <main className="mx-auto flex min-h-[calc(100vh-72px)] max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
+        <section className="rounded-2xl border border-slate-200/70 bg-white/85 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#3a437a]/70">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-200">
+            Latest Draft
+          </p>
+          <h1 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
+            现代前端架构中的状态管理策略
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-100/80">
+            这里是主内容区域，占位用于后续接入文章列表、CMS 或路由内容。
+          </p>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-2xl border border-dashed border-slate-200/70 bg-white/60 p-6 text-sm text-slate-500 dark:border-white/10 dark:bg-[#3a437a]/50 dark:text-slate-100/70">
+            这里可以注入文章列表、标签筛选、分页等模块。
           </div>
-
-          <aside className="space-y-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h3 className="text-sm font-semibold text-slate-100">
-                初始化清单
-              </h3>
-              <ul className="mt-4 space-y-3 text-sm text-slate-300">
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  React + TypeScript 基座
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  Tailwind CSS 样式系统
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  Radix UI 可访问组件
-                </li>
-              </ul>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-indigo-500/20 to-slate-900 p-6 text-sm text-slate-200">
-              用这套模板快速启动前端技术博客项目。
-            </div>
+          <aside className="rounded-2xl border border-slate-200/70 bg-[var(--accent-color)] p-6 text-sm text-slate-700 dark:border-white/10 dark:text-white">
+            右侧栏可以放置作者信息、近期文章或订阅入口。
           </aside>
         </section>
       </main>
     </div>
+  );
+};
+
+export default function App() {
+  return (
+    <ThemeProvider defaultTheme={siteConfig.theme.defaultMode}>
+      <AppShell />
+    </ThemeProvider>
   );
 }

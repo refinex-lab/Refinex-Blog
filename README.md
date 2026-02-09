@@ -6,7 +6,7 @@
 
 - React 19 + TypeScript
 - Vite
-- Tailwind CSS v3
+- Tailwind CSS v4
 - Radix UI (Dialog + Icons)
 
 ## 快速开始
@@ -38,7 +38,9 @@ npm run lint     # 代码检查
 │   ├── App.tsx        # 页面骨架与 Radix Dialog 示例
 │   ├── index.css      # Tailwind 入口与全局样式
 │   └── main.tsx       # 入口文件
-├── tailwind.config.js
-├── postcss.config.js
 └── vite.config.ts
 ```
+
+## Tailwind 配置
+
+使用 Tailwind CSS v4 + `@tailwindcss/vite` 插件，样式入口在 `src/index.css` 中通过 `@import "tailwindcss"` 引入。
