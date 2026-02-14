@@ -73,18 +73,19 @@ const SiteIcon = ({
   const resolvedIconSrc = isImageSource(iconSrc) ? iconSrc : undefined;
   const fallbackFontClass =
     !resolvedIconSrc && iconSrc && !iconFontClass ? iconSrc : undefined;
+  const symbolCandidate = iconFontId ?? (!resolvedIconSrc && iconSrc ? iconSrc : undefined);
   const iconSize = Math.round(size * 0.66);
   const fontSize = Math.round(size * 0.58);
 
   useEffect(() => {
-    if (!iconFontId) {
+    if (!symbolCandidate) {
       return;
     }
 
     let cancelled = false;
     const check = () => {
       if (cancelled) return;
-      setHasSymbol(hasIconFontSymbol(iconFontId));
+      setHasSymbol(hasIconFontSymbol(symbolCandidate));
     };
 
     check();
@@ -93,7 +94,7 @@ const SiteIcon = ({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [iconFontId]);
+  }, [symbolCandidate]);
 
   return (
     <div
@@ -109,9 +110,9 @@ const SiteIcon = ({
           loading="lazy"
           onError={() => setFailed(true)}
         />
-      ) : iconFontId && hasSymbol ? (
+      ) : symbolCandidate && hasSymbol ? (
         <IconFont
-          id={iconFontId}
+          id={symbolCandidate}
           className="text-slate-700 dark:text-slate-50"
           style={{ width: iconSize, height: iconSize }}
         />
@@ -462,7 +463,7 @@ export const NavigatePage = () => {
         </Card>
       </aside>
 
-        <section className="h-full space-y-4 overflow-y-auto pr-1">
+        <section className="h-full space-y-4 overflow-y-auto pr-3 pb-4">
           {activeCategory !== ALL_CATEGORY_ID ? (
             <div className="space-y-1">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
