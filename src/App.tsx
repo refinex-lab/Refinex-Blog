@@ -7,6 +7,7 @@ import {
   Moon,
   MessageCircle,
   Rss,
+  Sparkles,
   Sun,
   Twitter,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import { siteConfig } from "./config/site";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { useTheme } from "./providers/useTheme";
 import { AboutPage } from "./pages/about/AboutPage";
+import { AiHubPage } from "./pages/ai/AiHubPage";
 import { HomePage } from "./pages/home/HomePage";
 import { NavigatePage } from "./pages/navigate/NavigatePage";
 import { DocsPage } from "./pages/docs/DocsPage";
@@ -170,6 +172,20 @@ const Header = () => {
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
 
+          <NavLink
+            to="/ai"
+            aria-label="AI 入口"
+            className={({ isActive }) =>
+              `inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
+                isActive
+                  ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+              }`
+            }
+          >
+            <Sparkles className="h-5 w-5" />
+          </NavLink>
+
           {siteConfig.icons.map((item) => (
             <IconLink key={item.label} {...item} />
           ))}
@@ -195,6 +211,7 @@ const AppShell = () => {
       <main className="flex min-h-[calc(100vh-72px)] flex-1 flex-col">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/ai" element={<AiHubPage />} />
           <Route path="/docs/*" element={<DocsPage />} />
           <Route path="/navigate" element={<NavigatePage />} />
           <Route path="/about" element={<AboutPage />} />
