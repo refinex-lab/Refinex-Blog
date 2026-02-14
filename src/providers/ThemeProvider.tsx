@@ -1,21 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ThemeMode } from "../config/site";
-
-type ThemeContextValue = {
-  theme: ThemeMode;
-  resolvedTheme: "light" | "dark";
-  setTheme: (theme: ThemeMode) => void;
-  toggleTheme: () => void;
-};
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+import { ThemeContext } from "./useTheme";
 
 const STORAGE_KEY = "refinex-theme";
 const DARK_CLASS = "dark";
@@ -53,36 +39,35 @@ export const ThemeProvider = ({
     return stored ?? defaultTheme;
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
-    return theme === "system" ? getSystemTheme() : theme;
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() => {
+    return getSystemTheme();
   });
 
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
+
   useEffect(() => {
-    const nextResolved = theme === "system" ? getSystemTheme() : theme;
-    setResolvedTheme(nextResolved);
-    applyThemeClass(nextResolved);
+    // React state drives DOM + localStorage; no setState in the effect body.
+    applyThemeClass(resolvedTheme);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(storageKey, theme);
     }
-  }, [theme, storageKey]);
+  }, [resolvedTheme, storageKey, theme]);
 
   useEffect(() => {
-    if (theme !== "system") {
+    if (typeof window === "undefined" || !window.matchMedia) {
       return;
     }
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = (event: MediaQueryListEvent) => {
-      const nextResolved = event.matches ? "dark" : "light";
-      setResolvedTheme(nextResolved);
-      applyThemeClass(nextResolved);
+      setSystemTheme(event.matches ? "dark" : "light");
     };
     mediaQuery.addEventListener("change", handler);
     return () => {
       mediaQuery.removeEventListener("change", handler);
     };
-  }, [theme]);
+  }, []);
 
-  const value = useMemo<ThemeContextValue>(
+  const value = useMemo(
     () => ({
       theme,
       resolvedTheme,
@@ -97,10 +82,3 @@ export const ThemeProvider = ({
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within ThemeProvider.");
-  }
-  return context;
-};

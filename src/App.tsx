@@ -1,5 +1,5 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Link, NavLink, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import {
   ChevronDown,
   Github,
@@ -11,9 +11,13 @@ import {
   Twitter,
 } from "lucide-react";
 import { siteConfig } from "./config/site";
-import { ThemeProvider, useTheme } from "./providers/theme";
+import { ThemeProvider } from "./providers/ThemeProvider";
+import { useTheme } from "./providers/useTheme";
 import { AboutPage } from "./pages/about/AboutPage";
 import { HomePage } from "./pages/home/HomePage";
+import { NavigatePage } from "./pages/navigate/NavigatePage";
+import { DocsPage } from "./pages/docs/DocsPage";
+import { IconFontAssets } from "./components/ui/IconFontAssets";
 
 const ThemeToggle = () => {
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -117,8 +121,8 @@ const Header = () => {
                 className={({ isActive }) =>
                   `rounded-lg px-3 py-1 transition-colors ${
                     isActive
-                      ? "bg-[var(--accent-color)] text-slate-900 dark:text-white"
-                      : "text-slate-600 hover:bg-[var(--accent-color)] hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                      ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
                   }`
                 }
               >
@@ -177,51 +181,63 @@ const Header = () => {
 };
 
 const AppShell = () => {
+  const location = useLocation();
+  const isDocs = location.pathname.startsWith("/docs");
+
+
   return (
     <div className="min-h-screen bg-[var(--page-bg)] text-slate-900 transition-colors duration-300 dark:text-slate-100">
+      <IconFontAssets
+        scriptUrl={siteConfig.iconfont?.scriptUrl}
+        cssUrl={siteConfig.iconfont?.cssUrl}
+      />
       <Header />
       <main className="flex min-h-[calc(100vh-72px)] flex-1 flex-col">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/docs/*" element={<DocsPage />} />
+          <Route path="/navigate" element={<NavigatePage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>
       </main>
-      <footer
-        className="border-t border-black/5 py-8 text-sm text-slate-500 backdrop-blur dark:border-white/10 dark:text-slate-200"
-        style={{
-          backgroundColor:
-            "color-mix(in srgb, var(--page-bg) 75%, transparent)",
-        }}
-      >
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <p className="font-medium text-slate-700 dark:text-white">
-              {siteConfig.footer.copyright}
-            </p>
-            <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-300">
-              {siteConfig.footer.meta.map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full bg-black/5 px-2 py-1 dark:bg-white/10"
+      {isDocs ? null : (
+        <footer
+          className="border-t border-black/5 py-8 text-sm text-slate-500 backdrop-blur dark:border-white/10 dark:text-slate-200"
+          style={{
+            backgroundColor:
+              "color-mix(in srgb, var(--page-bg) 75%, transparent)",
+          }}
+        >
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-2">
+              <p className="font-medium text-slate-700 dark:text-white">
+                {siteConfig.footer.copyright}
+              </p>
+              <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-300">
+                {siteConfig.footer.meta.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full bg-black/5 px-2 py-1 dark:bg-white/10"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {siteConfig.footer.links.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                 >
-                  {item}
-                </span>
+                  {item.label}
+                </a>
               ))}
             </div>
           </div>
-          <div className="flex flex-wrap gap-4">
-            {siteConfig.footer.links.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 };

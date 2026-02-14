@@ -33,6 +33,13 @@ export type SiteConfig = {
     href: string;
     icon: "github" | "twitter" | "discord" | "rss";
   }[];
+  // iconfont（可选）：用于站点导航等模块渲染 iconfont Symbol 图标
+  iconfont?: {
+    // Symbol 模式脚本地址（iconfont.cn 生成的 `iconfont.js`）
+    scriptUrl?: string;
+    // 可选：font-class 模式样式地址（iconfont.cn 生成的 `iconfont.css`）
+    cssUrl?: string;
+  };
   theme: {
     // 是否启用主题切换
     enableToggle: boolean;
@@ -64,6 +71,8 @@ export const siteConfig: SiteConfig = {
   // 导航栏
   nav: [
     { label: "首页", href: "/" },
+    { label: "文档", href: "/docs" },
+    { label: "导航", href: "/navigate" },
     { label: "关于", href: "/about" },
   ],
   // 菜单
@@ -81,6 +90,11 @@ export const siteConfig: SiteConfig = {
       icon: "github",
     },
   ],
+  // iconfont（可选）：填入地址后会自动注入到页面 head
+  iconfont: {
+    // scriptUrl: "https://at.alicdn.com/t/c/font_XXXXXX_XXXXXX.js",
+    // cssUrl: "https://at.alicdn.com/t/c/font_XXXXXX_XXXXXX.css",
+  },
   // 主题配置
   theme: {
     // 是否启用主题切换

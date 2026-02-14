@@ -1,0 +1,174 @@
+.docs-markdown {
+  color: inherit;
+}
+
+.docs-markdown > :first-child {
+  margin-top: 0;
+}
+
+.docs-markdown h1 {
+  margin: 0 0 1rem;
+  font-size: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgb(24 24 27);
+}
+
+.dark .docs-markdown h1 {
+  color: rgb(250 250 250);
+}
+
+.docs-markdown h2 {
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(24 24 27);
+  scroll-margin-top: 6rem;
+}
+
+.dark .docs-markdown h2 {
+  color: rgb(244 244 245);
+}
+
+.docs-markdown h3 {
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgb(24 24 27);
+  scroll-margin-top: 6rem;
+}
+
+.dark .docs-markdown h3 {
+  color: rgb(244 244 245);
+}
+
+.docs-markdown p {
+  margin: 0.75rem 0;
+  font-size: 15px;
+  line-height: 1.75rem;
+  color: #282828;
+}
+
+.dark .docs-markdown p {
+  color: rgb(212 212 216);
+}
+
+.dark .docs-markdown ul,
+.dark .docs-markdown ol,
+.dark .docs-markdown li {
+  color: rgb(212 212 216);
+}
+
+.docs-markdown ul,
+.docs-markdown ol {
+  margin: 0.75rem 0;
+  padding-left: 1.25rem;
+  color: #282828;
+}
+
+.docs-markdown ul {
+  list-style: disc;
+}
+
+.docs-markdown ol {
+  list-style: decimal;
+}
+
+.docs-markdown ul ul {
+  list-style: circle;
+}
+
+.docs-markdown ul ul ul {
+  list-style: square;
+}
+
+.docs-markdown li::marker {
+  color: rgb(161 161 170);
+}
+
+.dark .docs-markdown li::marker {
+  color: rgb(113 113 122);
+}
+
+.docs-markdown li {
+  margin: 0.25rem 0;
+  color: #282828;
+}
+
+.docs-markdown table {
+  width: 100%;
+  margin: 1.25rem 0;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(228 228 231);
+}
+
+.dark .docs-markdown table {
+  border-color: rgb(39 39 42);
+}
+
+.docs-markdown th,
+.docs-markdown td {
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid rgb(228 228 231);
+  font-size: 14px;
+  text-align: left;
+}
+
+.dark .docs-markdown th,
+.dark .docs-markdown td {
+  border-bottom-color: rgb(39 39 42);
+}
+
+.docs-markdown thead th {
+  background: rgb(250 250 250);
+  font-weight: 600;
+  color: rgb(39 39 42);
+}
+
+.dark .docs-markdown thead th {
+  background: rgb(9 9 11);
+  color: rgb(244 244 245);
+}
+
+.docs-markdown blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid rgb(212 212 216);
+  padding-left: 0.875rem;
+  color: #282828;
+}
+
+.dark .docs-markdown blockquote {
+  border-left-color: rgb(63 63 70);
+  color: rgb(161 161 170);
+}
+
+.docs-heading-anchor {
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.docs-heading-anchor::before {
+  content: "#";
+  position: absolute;
+  left: -1.25rem;
+  opacity: 0;
+  color: rgb(161 161 170);
+}
+
+.docs-heading-anchor:hover::before {
+  opacity: 1;
+}
+
+.docs-mermaid svg {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  /* Keep mermaid's intrinsic sizing (avoid shrinking large diagrams). */
+  max-width: none;
+}

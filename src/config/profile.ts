@@ -117,11 +117,11 @@ export const profile: Profile = {
   ],
   projects: [
     {
-      name: "Telemetry Hub",
-      description: "统一日志与链路追踪平台，让问题定位从小时级缩短到分钟级。",
-      href: "https://refinex.dev/projects/telemetry",
+      name: "Refinex Blog",
+      description: "基于 Next.js 与 Tailwind CSS 构建的个人博客，记录技术分享与生活感悟。",
+      href: "https://github.com/refinex-lab/Refinex-Blog",
       images: ["/logo.svg", "/logo.svg", "/logo.svg"],
-      stack: ["Observability", "Kafka", "ClickHouse", "OpenTelemetry"],
+      stack: ["Tailwind CSS", "TypeScript", "React", "Radix UI"],
     },
     {
       name: "Gateway Suite",
