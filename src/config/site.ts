@@ -54,6 +54,13 @@ export type SiteConfig = {
     // 页脚链接
     links: SiteNavItem[];
   };
+  home?: {
+    title: string;
+    subtitle: string;
+    searchPlaceholder?: string;
+    primaryAction?: SiteNavItem;
+    secondaryAction?: SiteNavItem;
+  };
 };
 
 // 全局站点配置
@@ -110,5 +117,12 @@ export const siteConfig: SiteConfig = {
       { label: "使用条款", href: "/" },
       { label: "联系我", href: "/" },
     ],
+  },
+  home: {
+    title: "Refinex Blog",
+    subtitle: "沉淀架构、后端与工程实践的系统化笔记。",
+    searchPlaceholder: "搜索文章标题、描述或关键词…",
+    primaryAction: { label: "Get Started", href: "/docs" },
+    secondaryAction: { label: "导航入口", href: "/navigate" },
   },
 };
