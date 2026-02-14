@@ -93,7 +93,7 @@ export const siteConfig: SiteConfig = {
   // iconfont（可选）：填入地址后会自动注入到页面 head
   iconfont: {
     // scriptUrl: "https://at.alicdn.com/t/c/font_XXXXXX_XXXXXX.js",
-    // cssUrl: "https://at.alicdn.com/t/c/font_XXXXXX_XXXXXX.css",
+    cssUrl: "//at.alicdn.com/t/c/font_5127285_20gm0l0x92l.css",
   },
   // 主题配置
   theme: {

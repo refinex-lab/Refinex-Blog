@@ -1,10 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
-import { FiArrowUpRight, FiSearch, FiX } from "react-icons/fi";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  FiArrowUpRight,
+  FiCheck,
+  FiChevronDown,
+  FiSearch,
+  FiX,
+} from "react-icons/fi";
 import { navigateConfig, type NavigateCategory } from "../../config/navigate";
 import { Card } from "../../components/ui/Card";
 import { IconFont } from "../../components/ui/IconFont";
 
 const ALL_CATEGORY_ID = "all";
+
+type SearchEngine = "site" | "google" | "bing";
+
+const SEARCH_ENGINES: {
+  id: SearchEngine;
+  label: string;
+  hint: string;
+}[] = [
+  { id: "site", label: "站内", hint: "搜索站点资源" },
+  { id: "google", label: "Google", hint: "跳转 Google 搜索" },
+  { id: "bing", label: "Bing", hint: "跳转 Bing 搜索" },
+];
 
 const truncate = (value: string, max: number) => {
   if (value.length <= max) return value;
@@ -25,18 +43,38 @@ const hasIconFontSymbol = (iconFontId: string) => {
   return Boolean(document.getElementById(iconFontId));
 };
 
+const isImageSource = (value?: string) => {
+  if (!value) return false;
+  if (/^https?:\/\//i.test(value)) return true;
+  if (value.startsWith("/") || value.startsWith("./") || value.startsWith("../")) {
+    return true;
+  }
+  if (value.startsWith("data:")) return true;
+  return value.includes(".");
+};
+
 const SiteIcon = ({
   title,
   iconSrc,
   iconFontId,
+  iconFontClass,
+  size = 48,
 }: {
   title: string;
   iconSrc?: string;
   iconFontId?: string;
+  iconFontClass?: string;
+  size?: number;
 }) => {
   const [failed, setFailed] = useState(false);
   const [hasSymbol, setHasSymbol] = useState(false);
   const fallback = title.trim().slice(0, 1).toUpperCase();
+  const resolvedFontClass = iconFontClass ?? iconFontId;
+  const resolvedIconSrc = isImageSource(iconSrc) ? iconSrc : undefined;
+  const fallbackFontClass =
+    !resolvedIconSrc && iconSrc && !iconFontClass ? iconSrc : undefined;
+  const iconSize = Math.round(size * 0.66);
+  const fontSize = Math.round(size * 0.58);
 
   useEffect(() => {
     if (!iconFontId) {
@@ -58,20 +96,30 @@ const SiteIcon = ({
   }, [iconFontId]);
 
   return (
-    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-white/80 text-sm font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-slate-50">
-      {iconSrc && !failed ? (
+    <div
+      className="flex items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-white/80 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-slate-50"
+      style={{ width: size, height: size }}
+    >
+      {resolvedIconSrc && !failed ? (
         <img
-          src={iconSrc}
+          src={resolvedIconSrc}
           alt=""
           aria-hidden="true"
-          className="h-8 w-8"
+          style={{ width: iconSize, height: iconSize }}
           loading="lazy"
           onError={() => setFailed(true)}
         />
       ) : iconFontId && hasSymbol ? (
         <IconFont
           id={iconFontId}
-          className="h-8 w-8 text-slate-700 dark:text-slate-50"
+          className="text-slate-700 dark:text-slate-50"
+          style={{ width: iconSize, height: iconSize }}
+        />
+      ) : resolvedFontClass || fallbackFontClass ? (
+        <i
+          aria-hidden="true"
+          className={`iconfont ${resolvedFontClass ?? fallbackFontClass} text-slate-700 dark:text-slate-50`}
+          style={{ fontSize }}
         />
       ) : (
         <span>{fallback}</span>
@@ -98,12 +146,12 @@ const CategoryButton = ({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors ${
+      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
         disabled
           ? "cursor-not-allowed text-slate-300 dark:text-slate-600"
           : active
-            ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+            ? "bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-slate-50"
       }`}
     >
       <span className="truncate">{label}</span>
@@ -123,8 +171,34 @@ const CategoryButton = ({
 export const NavigatePage = () => {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY_ID);
+  const [engine, setEngine] = useState<SearchEngine>("site");
+  const [engineOpen, setEngineOpen] = useState(false);
+  const engineRef = useRef<HTMLDivElement | null>(null);
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const isSiteSearch = engine === "site";
+  const normalizedQuery = isSiteSearch ? query.trim().toLowerCase() : "";
+  const activeEngine = SEARCH_ENGINES.find((item) => item.id === engine);
+
+  useEffect(() => {
+    if (!engineOpen) return;
+    const handleClick = (event: MouseEvent) => {
+      if (!engineRef.current) return;
+      if (!engineRef.current.contains(event.target as Node)) {
+        setEngineOpen(false);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setEngineOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [engineOpen]);
 
   const categories = useMemo(() => {
     const allCategory: NavigateCategory = {
@@ -173,50 +247,174 @@ export const NavigatePage = () => {
     });
   }, [activeCategory, queryFilteredSites]);
 
-  const resultLabel = `${visibleSites.length} / ${navigateConfig.sites.length}`;
+  const handleSearch = () => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    if (engine === "site") {
+      setActiveCategory(ALL_CATEGORY_ID);
+      return;
+    }
+    const baseUrl =
+      engine === "google"
+        ? "https://www.google.com/search?q="
+        : "https://www.bing.com/search?q=";
+    window.open(
+      `${baseUrl}${encodeURIComponent(trimmed)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const searchPlaceholder = isSiteSearch
+    ? "搜索站点、描述、域名或标签…"
+    : `在 ${activeEngine?.label ?? "搜索引擎"} 输入关键词`;
+
+  const searchIconSrc =
+    engine === "google"
+      ? "/navigate-icons/google-search-icon.svg"
+      : engine === "bing"
+        ? "/navigate-icons/bing-search-icon.svg"
+        : undefined;
+
+  const pinnedSites = useMemo(
+    () => navigateConfig.sites.filter((site) => site.pinned).slice(0, 6),
+    []
+  );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-300" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索站点、描述、域名或标签…"
-            aria-label="搜索站点"
-            className="h-12 w-full rounded-2xl border border-black/10 bg-white/80 pl-11 pr-10 text-sm text-slate-900 shadow-sm backdrop-blur transition-colors placeholder:text-slate-400 focus:border-black/20 focus:outline-none dark:border-white/10 dark:bg-white/10 dark:text-slate-50 dark:placeholder:text-slate-300/70 dark:focus:border-white/25"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="清空搜索"
-              className="absolute right-3 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-500 transition hover:bg-black/5 hover:text-slate-700 dark:text-slate-200/70 dark:hover:bg-white/10 dark:hover:text-slate-50"
-            >
-              <FiX className="h-4 w-4" />
-            </button>
-          ) : null}
+    <>
+      <div className="mx-auto flex h-[calc(100vh-72px)] w-full max-w-[1200px] flex-col gap-4 overflow-hidden px-6 py-6 lg:py-8">
+        <div className="p-0">
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSearch();
+            }}
+          >
+            <div className="flex w-full items-center overflow-visible rounded-2xl border border-black/10 bg-white shadow-sm transition-colors focus-within:border-black/20 dark:border-white/10 dark:bg-white/5 dark:focus-within:border-white/25">
+              <div ref={engineRef} className="relative z-30">
+                <button
+                  type="button"
+                  onClick={() => setEngineOpen((prev) => !prev)}
+                  className="flex h-12 items-center gap-2 rounded-l-2xl px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-100/80 dark:text-slate-200 dark:hover:bg-white/10"
+                  aria-haspopup="listbox"
+                  aria-expanded={engineOpen}
+                >
+                  {searchIconSrc ? (
+                    <img
+                      src={searchIconSrc}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-4 w-4"
+                    />
+                  ) : (
+                    <FiSearch className="h-4 w-4 text-slate-400 dark:text-slate-300" />
+                  )}
+                  <span>{activeEngine?.label ?? "站内"}</span>
+                  <FiChevronDown className="h-3 w-3 opacity-60" />
+                </button>
+                {engineOpen ? (
+                  <div
+                    role="listbox"
+                    className="absolute left-0 z-50 mt-2 w-52 rounded-2xl border border-black/10 bg-white p-2 text-xs shadow-2xl dark:border-white/10 dark:bg-slate-950"
+                  >
+                    <div className="space-y-1">
+                      {SEARCH_ENGINES.map((item) => {
+                        const active = item.id === engine;
+                        const itemIconSrc =
+                          item.id === "google"
+                            ? "/navigate-icons/google-search-icon.svg"
+                            : item.id === "bing"
+                              ? "/navigate-icons/bing-search-icon.svg"
+                              : undefined;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setEngine(item.id);
+                              setEngineOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition ${
+                              active
+                                ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+                                {itemIconSrc ? (
+                                  <img
+                                    src={itemIconSrc}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="h-3.5 w-3.5"
+                                  />
+                                ) : (
+                                  <FiSearch className="h-3.5 w-3.5 text-slate-400 dark:text-slate-300" />
+                                )}
+                              </span>
+                              <div className="space-y-0.5">
+                                <div className="font-semibold">{item.label}</div>
+                                <div className="text-[11px] text-slate-400 dark:text-slate-400">
+                                  {item.hint}
+                                </div>
+                              </div>
+                            </div>
+                            {active ? (
+                              <FiCheck className="h-3.5 w-3.5 text-slate-500 dark:text-slate-200" />
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="h-8 w-px bg-black/10 dark:bg-white/10" />
+
+              <div className="relative flex-1">
+                <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-300" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={searchPlaceholder}
+                  aria-label="搜索站点"
+                  className="h-12 w-full rounded-none border border-transparent bg-transparent pl-9 pr-12 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-50 dark:placeholder:text-slate-300/70"
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="清空搜索"
+                    className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-black/5 hover:text-slate-700 dark:text-slate-200/70 dark:hover:bg-white/10 dark:hover:text-slate-50"
+                  >
+                    <FiX className="h-4 w-4" />
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+          </form>
         </div>
 
-        <div className="text-xs text-slate-500 dark:text-slate-200/70">
-          {resultLabel}
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <div className="grid h-full min-h-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="h-full">
-          <Card className="flex h-full flex-col p-4">
+          <Card className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
             <div className="space-y-1">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-                分类
+                分类筛选
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-200/70">
-                点击切换分类；搜索会跨分类生效。
+                {isSiteSearch
+                  ? "搜索会跨分类生效"
+                  : "外部搜索不影响本页列表"}
               </p>
             </div>
-            <div className="mt-3 flex-1 space-y-1 overflow-auto pr-1">
+            <div className="flex-1 space-y-1 overflow-y-auto pr-1">
               {categories.map((cat) => {
                 const count = categoryCountMap.get(cat.id) ?? 0;
                 const disabled = cat.id !== ALL_CATEGORY_ID && count === 0;
@@ -232,10 +430,39 @@ export const NavigatePage = () => {
                 );
               })}
             </div>
-          </Card>
-        </aside>
+            {pinnedSites.length ? (
+              <div className="shrink-0 border-t border-black/5 pt-4 text-xs text-slate-500 dark:border-white/10 dark:text-slate-300">
+                <p className="mb-2 font-semibold text-slate-700 dark:text-slate-200">
+                  置顶站点
+                </p>
+                <div className="space-y-2">
+                  {pinnedSites.map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                    >
+                      <SiteIcon
+                        title={site.title}
+                        iconSrc={site.iconSrc}
+                        iconFontId={site.iconFontId}
+                        iconFontClass={site.iconFontClass}
+                        size={32}
+                      />
+                      <span className="truncate text-xs font-semibold">
+                        {site.title}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+        </Card>
+      </aside>
 
-        <section className="space-y-4">
+        <section className="h-full space-y-4 overflow-y-auto pr-1">
           {activeCategory !== ALL_CATEGORY_ID ? (
             <div className="space-y-1">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -251,7 +478,7 @@ export const NavigatePage = () => {
           ) : null}
 
           {visibleSites.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {visibleSites.map((site) => {
                 const hostname = getHostname(site.href);
                 const description = truncate(site.description, 56);
@@ -261,7 +488,7 @@ export const NavigatePage = () => {
                     href={site.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex flex-col justify-between rounded-2xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur transition-colors hover:border-black/10 hover:bg-white/95 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:border-white/10 dark:bg-white/10 dark:hover:border-white/20 dark:hover:bg-white/15 dark:focus-visible:ring-white/20"
+                    className="group relative flex h-full flex-col justify-between rounded-2xl border border-black/5 bg-white/80 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-black/10 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:border-white/10 dark:bg-white/10 dark:hover:border-white/20 dark:hover:bg-white/15 dark:focus-visible:ring-white/20"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
@@ -270,9 +497,10 @@ export const NavigatePage = () => {
                             title={site.title}
                             iconSrc={site.iconSrc}
                             iconFontId={site.iconFontId}
+                            iconFontClass={site.iconFontClass}
                           />
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+                            <p className="truncate text-[15px] font-semibold text-slate-900 dark:text-slate-50">
                               {site.title}
                             </p>
                             <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-200/70">
@@ -281,15 +509,16 @@ export const NavigatePage = () => {
                           </div>
                         </div>
 
-                        <span className="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition group-hover:bg-black/5 group-hover:text-slate-700 dark:text-slate-300/70 dark:group-hover:bg-white/10 dark:group-hover:text-slate-50">
-                          <FiArrowUpRight className="h-4 w-4" />
-                        </span>
                       </div>
 
-                      <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-100/80">
+                      <p className="mt-3 line-clamp-2 text-[13px] leading-6 text-slate-600 dark:text-slate-100/80">
                         {description}
                       </p>
                     </div>
+                    <span className="pointer-events-none absolute bottom-3 right-3 inline-flex translate-y-1 items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+                      前往
+                      <FiArrowUpRight className="h-3 w-3" />
+                    </span>
                   </a>
                 );
               })}
@@ -318,8 +547,9 @@ export const NavigatePage = () => {
               ) : null}
             </Card>
           )}
-        </section>
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
