@@ -64,10 +64,56 @@ const zhCollator = new Intl.Collator("zh-Hans", {
   sensitivity: "base",
 });
 
-export const sortDocsNavChildren = (children: DocsNavNode[]) => {
+const normalizeOrderKey = (value: string) => {
+  return value.trim().replace(/\/$/, "").replace(/\.(md|mdx)$/i, "");
+};
+
+const getNodeOrderKey = (node: DocsNavNode) => {
+  if (node.type === "folder") {
+    const base = node.id.split("/").at(-1) ?? node.title;
+    return normalizeOrderKey(base);
+  }
+  const id = node.type === "doc" ? node.slug : node.id;
+  const base = id.split("/").at(-1) ?? node.title;
+  return normalizeOrderKey(base);
+};
+
+export const sortDocsNavChildren = (children: DocsNavNode[], order?: string[]) => {
   const typeRank = (node: DocsNavNode) => (node.type === "folder" ? 0 : 1);
+  const isPinnedLastFolder = (node: DocsNavNode) =>
+    node.type === "folder" && node.title === "搭建本站";
+  const orderIndex = new Map<string, number>();
+
+  if (order) {
+    order.forEach((key, index) => {
+      const normalized = normalizeOrderKey(key);
+      if (!normalized || orderIndex.has(normalized)) return;
+      orderIndex.set(normalized, index);
+    });
+  }
+
+  const getExplicitIndex = (node: DocsNavNode) => {
+    if (orderIndex.size === 0) return undefined;
+    return orderIndex.get(getNodeOrderKey(node));
+  };
 
   children.sort((a, b) => {
+    const aExplicit = getExplicitIndex(a);
+    const bExplicit = getExplicitIndex(b);
+    if (aExplicit !== undefined || bExplicit !== undefined) {
+      if (aExplicit === undefined) return 1;
+      if (bExplicit === undefined) return -1;
+      if (aExplicit !== bExplicit) return aExplicit - bExplicit;
+    }
+
+    if (aExplicit === undefined && bExplicit === undefined) {
+      const aPinned = isPinnedLastFolder(a);
+      const bPinned = isPinnedLastFolder(b);
+      if (aPinned !== bPinned) {
+        return aPinned ? 1 : -1;
+      }
+    }
+
     const rankDiff = typeRank(a) - typeRank(b);
     if (rankDiff !== 0) {
       return rankDiff;
@@ -84,17 +130,20 @@ export const sortDocsNavChildren = (children: DocsNavNode[]) => {
   });
 };
 
-export const finalizeFolderOrders = (folder: DocsNavFolder): number => {
+export const finalizeFolderOrders = (
+  folder: DocsNavFolder,
+  folderOrderById?: Map<string, string[]>
+): number => {
   let minOrder = Number.POSITIVE_INFINITY;
   for (const child of folder.children) {
     if (child.type === "folder") {
-      const childOrder = finalizeFolderOrders(child);
+      const childOrder = finalizeFolderOrders(child, folderOrderById);
       minOrder = Math.min(minOrder, childOrder);
       continue;
     }
     minOrder = Math.min(minOrder, child.order);
   }
   folder.order = minOrder;
-  sortDocsNavChildren(folder.children);
+  sortDocsNavChildren(folder.children, folderOrderById?.get(folder.id));
   return minOrder;
 };

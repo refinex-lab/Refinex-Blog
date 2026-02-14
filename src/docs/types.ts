@@ -1,11 +1,16 @@
-export type MarkdownDoc = {
+export type ContentDoc = {
   slug: string;
   title: string;
   description?: string;
+  cover?: string;
+  author?: string;
+  createdAt?: string;
+  updatedAt?: string;
   order: number;
   sourcePath: string;
   raw: string;
   body: string;
+  format: "md" | "mdx";
 };
 
 export type DocsNavFolder = {
@@ -47,4 +52,3 @@ export type SearchHit = {
   section?: string;
   snippet?: string;
 };
-

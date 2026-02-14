@@ -35,41 +35,75 @@ export const DocsToc = ({
     const root = contentRef.current;
     if (!root) return;
 
-    const nextItems = buildTocItems(root);
-    setItems(nextItems);
-    setActiveId((prev) => prev || nextItems[0]?.id || "");
+    let intersectionObserver: IntersectionObserver | null = null;
+    let mutationObserver: MutationObserver | null = null;
+    let rafId: number | null = null;
 
-    const headings = nextItems
-      .map((item) => root.querySelector<HTMLElement>(`#${CSS.escape(item.id)}`))
-      .filter((el): el is HTMLElement => Boolean(el));
-
-    if (!headings.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort(
-            (a, b) =>
-              (a.target as HTMLElement).getBoundingClientRect().top -
-              (b.target as HTMLElement).getBoundingClientRect().top
-          );
-
-        const topMost = visible[0]?.target as HTMLElement | undefined;
-        if (topMost?.id) {
-          setActiveId(topMost.id);
-        }
-      },
-      {
-        root: null,
-        // Account for the sticky header + a little breathing room.
-        rootMargin: "-96px 0px -70% 0px",
-        threshold: 0,
+    const setupIntersection = (nextItems: TocItem[]) => {
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
+        intersectionObserver = null;
       }
-    );
 
-    for (const el of headings) observer.observe(el);
-    return () => observer.disconnect();
+      const headings = nextItems
+        .map((item) =>
+          root.querySelector<HTMLElement>(`#${CSS.escape(item.id)}`)
+        )
+        .filter((el): el is HTMLElement => Boolean(el));
+
+      if (!headings.length) return;
+
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort(
+              (a, b) =>
+                (a.target as HTMLElement).getBoundingClientRect().top -
+                (b.target as HTMLElement).getBoundingClientRect().top
+            );
+
+          const topMost = visible[0]?.target as HTMLElement | undefined;
+          if (topMost?.id) {
+            setActiveId(topMost.id);
+          }
+        },
+        {
+          root: null,
+          // Account for the sticky header + a little breathing room.
+          rootMargin: "-96px 0px -70% 0px",
+          threshold: 0,
+        }
+      );
+
+      for (const el of headings) intersectionObserver.observe(el);
+    };
+
+    const rebuild = () => {
+      const nextItems = buildTocItems(root);
+      setItems(nextItems);
+      setActiveId((prev) => prev || nextItems[0]?.id || "");
+      setupIntersection(nextItems);
+    };
+
+    const scheduleRebuild = () => {
+      if (rafId != null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        rebuild();
+      });
+    };
+
+    rebuild();
+
+    mutationObserver = new MutationObserver(() => scheduleRebuild());
+    mutationObserver.observe(root, { childList: true, subtree: true });
+
+    return () => {
+      if (intersectionObserver) intersectionObserver.disconnect();
+      if (mutationObserver) mutationObserver.disconnect();
+      if (rafId != null) window.cancelAnimationFrame(rafId);
+    };
   }, [contentRef, docKey]);
 
   const hasItems = items.length > 0;

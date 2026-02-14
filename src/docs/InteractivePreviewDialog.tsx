@@ -62,7 +62,7 @@ export const InteractivePreviewDialog = ({
     >
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/72 backdrop-blur-sm" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.18),rgba(0,0,0,0.65))] backdrop-blur-sm dark:bg-black/75 dark:bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.08),rgba(0,0,0,0.85))]" />
         <Dialog.Content className="fixed inset-0 z-50 flex flex-col outline-none">
           <div className="flex items-center justify-between gap-4 border-b border-white/15 px-4 py-3 text-white/90">
             {label ? <div className="text-sm font-medium">{label}</div> : <div />}

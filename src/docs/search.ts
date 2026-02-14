@@ -1,6 +1,6 @@
 import { Index } from "flexsearch";
 import { docsCustomPages } from "./customPages";
-import { markdownDocs } from "./contentIndex";
+import { contentDocs } from "./contentIndex";
 import type { SearchHit } from "./types";
 import { getDocHref, stripMarkdown } from "./utils";
 
@@ -23,8 +23,8 @@ const buildSearchDocs = (): SearchDoc[] => {
     text: page.description ?? "",
   }));
 
-  const markdown = markdownDocs.map<SearchDoc>((doc) => ({
-    id: `md:${doc.slug}`,
+  const markdown = contentDocs.map<SearchDoc>((doc) => ({
+    id: `${doc.format}:${doc.slug}`,
     title: doc.title,
     href: getDocHref(doc.slug),
     description: doc.description,

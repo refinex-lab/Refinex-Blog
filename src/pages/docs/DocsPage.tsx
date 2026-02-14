@@ -4,7 +4,12 @@ import { docsCustomPages } from "../../docs/customPages";
 import { DocsSidebar } from "../../docs/DocsSidebar";
 import { DocsToc } from "../../docs/DocsToc";
 import { MarkdownRenderer } from "../../docs/MarkdownRenderer";
-import { docsNavTree, markdownDocBySlug } from "../../docs/contentIndex";
+import { MDXRenderer } from "../../docs/MDXRenderer";
+import {
+  contentDocBySlug,
+  docsNavTree,
+  mdxDocComponentLoaderBySlug,
+} from "../../docs/contentIndex";
 
 const decodeDocsSlug = (pathname: string) => {
   const rest = pathname.replace(/^\/docs\/?/, "");
@@ -27,18 +32,37 @@ export const DocsPage = () => {
 
   const customPage = docsCustomPages.find((page) => page.slug === slug);
   const CustomPageComponent = customPage?.component;
-  const markdownDoc = markdownDocBySlug.get(slug);
+  const contentDoc = contentDocBySlug.get(slug);
+  const mdxLoader = mdxDocComponentLoaderBySlug.get(slug);
 
   const docKey = customPage
     ? `page:${slug}`
-    : markdownDoc
-      ? `md:${slug}`
+    : contentDoc
+      ? `${contentDoc.format}:${slug}`
       : `404:${slug}`;
 
   const content = CustomPageComponent ? (
     <CustomPageComponent />
-  ) : markdownDoc ? (
-    <MarkdownRenderer markdown={markdownDoc.body} />
+  ) : contentDoc ? (
+    contentDoc.format === "mdx" ? (
+      mdxLoader ? (
+        <MDXRenderer key={slug} loader={mdxLoader} meta={contentDoc} />
+      ) : (
+        <div className="mx-auto w-full max-w-5xl pb-20 pt-10">
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            MDX module missing
+          </h1>
+          <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
+            未找到该 MDX 文档模块：
+            <code className="ml-2 rounded bg-black/5 px-2 py-1 dark:bg-white/10">
+              {slug}
+            </code>
+          </p>
+        </div>
+      )
+    ) : (
+      <MarkdownRenderer markdown={contentDoc.body} meta={contentDoc} />
+    )
   ) : (
     <div className="mx-auto w-full max-w-5xl pb-20 pt-10">
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">

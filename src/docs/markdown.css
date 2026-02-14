@@ -6,6 +6,14 @@
   margin-top: 0;
 }
 
+.docs-content > :first-child {
+  margin-top: 0;
+}
+
+.docs-with-hero .docs-content > h1:first-of-type {
+  display: none;
+}
+
 .docs-markdown h1 {
   margin: 0 0 1rem;
   font-size: 2.25rem;
@@ -96,6 +104,36 @@
 .docs-markdown li {
   margin: 0.25rem 0;
   color: #282828;
+}
+
+.docs-markdown ul.contains-task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.docs-markdown li.task-list-item {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-left: 0;
+}
+
+.docs-markdown li.task-list-item::marker {
+  content: "";
+}
+
+.docs-markdown li.task-list-item > input[type="checkbox"] {
+  margin-top: 0.25rem;
+  height: 1rem;
+  width: 1rem;
+  flex: 0 0 auto;
+  accent-color: var(--accent-color);
+}
+
+.docs-markdown .docs-codeblock,
+.docs-markdown .docs-mermaid {
+  margin: 1rem 0;
 }
 
 .docs-markdown table {

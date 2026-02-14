@@ -4,6 +4,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import type { Components } from "react-markdown";
 import { CodeBlock } from "./CodeBlock";
+import { DocHeader } from "./DocHeader";
 import { MermaidBlock } from "./MermaidBlock";
 import { MarkdownImage } from "./MarkdownImage";
 import "./markdown.css";
@@ -48,25 +49,67 @@ const components: Components = {
   ),
 };
 
-export const MarkdownRenderer = ({ markdown }: { markdown: string }) => {
+export const MarkdownRenderer = ({
+  markdown,
+  meta,
+}: {
+  markdown: string;
+  meta?: {
+    title: string;
+    description?: string;
+    cover?: string;
+    author?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}) => {
+  const showHeader = Boolean(
+    meta?.cover || meta?.author || meta?.createdAt || meta?.updatedAt
+  );
   return (
-    <article className="docs-markdown w-full max-w-none pb-20 pt-10">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[
-          rehypeSlug,
-          [
-            rehypeAutolinkHeadings,
-            {
-              behavior: "wrap",
-              properties: { className: ["docs-heading-anchor"] },
-            },
-          ],
-        ]}
-        components={components}
-      >
-        {markdown}
-      </ReactMarkdown>
+    <article
+      className={`docs-markdown w-full max-w-none pb-20 pt-10 ${
+        showHeader ? "docs-with-hero" : ""
+      }`}
+    >
+      {showHeader && meta ? <DocHeader {...meta} /> : null}
+      {showHeader ? (
+        <div className="docs-content">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[
+              rehypeSlug,
+              [
+                rehypeAutolinkHeadings,
+                {
+                  behavior: "wrap",
+                  properties: { className: ["docs-heading-anchor"] },
+                },
+              ],
+            ]}
+            components={components}
+          >
+            {markdown}
+          </ReactMarkdown>
+        </div>
+      ) : (
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[
+            rehypeSlug,
+            [
+              rehypeAutolinkHeadings,
+              {
+                behavior: "wrap",
+                properties: { className: ["docs-heading-anchor"] },
+              },
+            ],
+          ]}
+          components={components}
+        >
+          {markdown}
+        </ReactMarkdown>
+      )}
     </article>
   );
 };

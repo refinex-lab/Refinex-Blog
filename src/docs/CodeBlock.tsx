@@ -115,7 +115,7 @@ export const CodeBlock = ({
   };
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-black/10 bg-white dark:border-white/10 dark:bg-zinc-950">
+    <div className="docs-codeblock group overflow-hidden rounded-2xl border border-black/10 bg-white dark:border-white/10 dark:bg-zinc-950">
       <div className="flex items-center justify-between gap-4 border-b border-black/5 px-4 py-2 text-[12px] text-zinc-500 dark:border-white/10 dark:text-zinc-400">
         <span className="font-medium tracking-wide">{lang}</span>
         <button
