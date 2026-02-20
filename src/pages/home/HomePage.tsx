@@ -127,9 +127,6 @@ export const HomePage = () => {
       .slice(0, 8);
   }, []);
 
-  const totalDocs = contentDocs.length;
-  const totalCategories = new Set(contentDocs.map((doc) => doc.slug.split("/")[0])).size;
-
   const handleSearch = () => {
     const trimmed = query.trim();
     if (!trimmed) return;
@@ -153,7 +150,7 @@ export const HomePage = () => {
   };
 
   return (
-    <div className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-6 py-10">
+    <div className="relative flex w-full max-w-none flex-col gap-10 overflow-x-clip px-6 py-10 xl:px-8">
       <div className="pointer-events-none absolute -left-[24vw] top-[-14vh] h-[38vh] w-[38vw] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.2),rgba(255,255,255,0))] opacity-55 blur-3xl dark:opacity-95" />
       <div className="pointer-events-none absolute -right-[24vw] top-[16vh] h-[40vh] w-[40vw] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.16),rgba(255,255,255,0))] opacity-45 blur-3xl dark:opacity-85" />
 

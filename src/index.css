@@ -160,6 +160,12 @@ body {
 
 .home-marquee-row {
   overflow: hidden;
+  padding-top: 4px;
+  margin-top: -4px;
+}
+
+.home-marquee {
+  overflow-x: hidden;
 }
 
 .home-marquee-track {
