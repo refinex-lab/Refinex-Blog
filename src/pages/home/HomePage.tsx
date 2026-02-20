@@ -105,9 +105,15 @@ export const HomePage = () => {
         ts: toTimestamp(doc.updatedAt) || toTimestamp(doc.createdAt),
       }))
       .sort((a, b) => b.ts - a.ts)
-      .slice(0, 10)
+      .slice(0, 20)
       .map((item) => item.doc);
   }, []);
+
+  const recentRows = useMemo(() => {
+    const firstRow = recentDocs.filter((_, index) => index % 2 === 0);
+    const secondRow = recentDocs.filter((_, index) => index % 2 === 1);
+    return [firstRow, secondRow] as const;
+  }, [recentDocs]);
 
   const categoryStats = useMemo(() => {
     const map = new Map<string, number>();
@@ -147,8 +153,11 @@ export const HomePage = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 px-6 py-10">
-      <section className="relative overflow-visible rounded-[28px] border-black/5 bg-white/80 p-0 backdrop-blur dark:border-white/10 dark:bg-slate-950/60">
+    <div className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-6 py-10">
+      <div className="pointer-events-none absolute -left-[24vw] top-[-14vh] h-[38vh] w-[38vw] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.2),rgba(255,255,255,0))] opacity-55 blur-3xl dark:opacity-95" />
+      <div className="pointer-events-none absolute -right-[24vw] top-[16vh] h-[40vh] w-[40vw] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.16),rgba(255,255,255,0))] opacity-45 blur-3xl dark:opacity-85" />
+
+      <section className="relative z-10 overflow-visible rounded-[28px] bg-white/80 p-0 backdrop-blur  dark:bg-transparent">
         <div className="pointer-events-none absolute -left-10 top-[-120px] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.18),rgba(255,255,255,0))] blur-3xl" />
         <div className="pointer-events-none absolute right-[-80px] top-[20%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.16),rgba(255,255,255,0))] blur-3xl" />
 
@@ -169,7 +178,7 @@ export const HomePage = () => {
                 {siteConfig.home?.primaryAction ? (
                   <Link
                     to={siteConfig.home.primaryAction.href}
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                   >
                     {siteConfig.home.primaryAction.label}
                     <ArrowUpRight className="h-4 w-4" />
@@ -178,7 +187,7 @@ export const HomePage = () => {
                 {siteConfig.home?.secondaryAction ? (
                   <Link
                     to={siteConfig.home.secondaryAction.href}
-                    className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-black/5 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+                    className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-black/5 dark:border-slate-700/70 dark:text-slate-200 dark:hover:bg-slate-800/70"
                   >
                     {siteConfig.home.secondaryAction.label}
                   </Link>
@@ -186,21 +195,21 @@ export const HomePage = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 rounded-2xl border border-black/5 bg-white/70 px-4 py-3 text-xs text-slate-500 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            {/* <div className="flex items-center gap-4 rounded-2xl border border-black/5 bg-white/70 px-4 py-3 text-xs text-slate-500 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.2em]">Docs</div>
                 <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
                   {totalDocs}
                 </div>
               </div>
-              <div className="h-8 w-px bg-black/10 dark:bg-white/10" />
+              <div className="h-8 w-px bg-black/10 dark:bg-slate-700/80" />
               <div>
                 <div className="text-[11px] uppercase tracking-[0.2em]">Categories</div>
                 <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
                   {totalCategories}
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <form
@@ -210,12 +219,12 @@ export const HomePage = () => {
               handleSearch();
             }}
           >
-            <div className="flex w-full items-center overflow-visible rounded-2xl border border-black/10 bg-white shadow-sm transition-colors focus-within:border-black/20 dark:border-white/10 dark:bg-white/5 dark:focus-within:border-white/25">
+            <div className="flex w-full items-center overflow-visible rounded-2xl border border-black/10 bg-white shadow-sm transition-colors focus-within:border-black/20 dark:border-slate-700/60 dark:bg-slate-900/70 dark:focus-within:border-slate-500/80">
               <div ref={engineRef} className="relative z-30">
                 <button
                   type="button"
                   onClick={() => setEngineOpen((prev) => !prev)}
-                  className="flex h-12 items-center gap-2 rounded-l-2xl px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-100/80 dark:text-slate-200 dark:hover:bg-white/10"
+                  className="flex h-12 items-center gap-2 rounded-l-2xl px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-100/80 dark:text-slate-200 dark:hover:bg-slate-800/70"
                   aria-haspopup="listbox"
                   aria-expanded={engineOpen}
                 >
@@ -235,7 +244,7 @@ export const HomePage = () => {
                 {engineOpen ? (
                   <div
                     role="listbox"
-                    className="absolute left-0 z-50 mt-2 w-52 rounded-2xl border border-black/10 bg-white p-2 text-xs shadow-2xl dark:border-white/10 dark:bg-slate-950"
+                    className="absolute left-0 z-50 mt-2 w-52 rounded-2xl border border-black/10 bg-white p-2 text-xs shadow-2xl dark:border-slate-700/60 dark:bg-slate-900"
                   >
                     <div className="space-y-1">
                       {SEARCH_ENGINES.map((item) => {
@@ -256,12 +265,12 @@ export const HomePage = () => {
                             }}
                             className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition ${
                               active
-                                ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white"
-                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white"
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-black/5 dark:bg-slate-800/90">
                                 {itemIconSrc ? (
                                   <img
                                     src={itemIconSrc}
@@ -311,7 +320,7 @@ export const HomePage = () => {
             </div>
 
             {engine === "site" && query.trim() ? (
-              <div className="absolute left-0 right-0 mt-3 rounded-2xl border border-black/10 bg-white p-3 text-sm shadow-2xl dark:border-white/10 dark:bg-slate-950">
+              <div className="absolute left-0 right-0 mt-3 rounded-2xl border border-black/10 bg-white p-3 text-sm shadow-2xl dark:border-slate-700/60 dark:bg-slate-900">
                 {searchResults.length ? (
                   <div className="space-y-1">
                     {searchResults.map((hit) => (
@@ -319,14 +328,14 @@ export const HomePage = () => {
                         key={hit.id}
                         type="button"
                         onClick={() => navigate(hit.href)}
-                        className="w-full rounded-xl px-3 py-2 text-left transition hover:bg-black/5 dark:hover:bg-white/10"
+                        className="w-full rounded-xl px-3 py-2 text-left transition hover:bg-black/5 dark:hover:bg-slate-800/70"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                             {highlight(hit.title, query)}
                           </p>
                           {hit.section ? (
-                            <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                            <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800/90 dark:text-slate-300">
                               {hit.section}
                             </span>
                           ) : null}
@@ -356,9 +365,6 @@ export const HomePage = () => {
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               近期更新
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-300">
-              最近更新或新增的文章
-            </p>
           </div>
           <Link
             to="/docs"
@@ -369,36 +375,51 @@ export const HomePage = () => {
           </Link>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recentDocs.map((doc) => {
-            const category = doc.slug.split("/")[0] ?? "";
-            const primaryDate = formatDate(doc.updatedAt) ?? formatDate(doc.createdAt);
+        <div className="home-marquee space-y-3">
+          {recentRows.map((rowDocs, rowIndex) => {
+            const docs = rowDocs.length ? rowDocs : recentDocs;
+            const duplicated = [...docs, ...docs];
             return (
-              <Link
-                key={doc.slug}
-                to={getDocHref(doc.slug)}
-                className="group rounded-2xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-black/10 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10"
-              >
-                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span className="rounded-full bg-black/5 px-2 py-0.5 dark:bg-white/10">
-                    {category}
-                  </span>
-                  {primaryDate ? <span>{primaryDate}</span> : null}
+              <div key={`recent-row-${rowIndex}`} className="home-marquee-row">
+                <div
+                  className={`home-marquee-track ${
+                    rowIndex === 1 ? "home-marquee-track-reverse" : ""
+                  }`}
+                >
+                  {duplicated.map((doc, index) => {
+                    const category = doc.slug.split("/")[0] ?? "";
+                    const primaryDate =
+                      formatDate(doc.updatedAt) ?? formatDate(doc.createdAt);
+                    return (
+                      <Link
+                        key={`${doc.slug}-${rowIndex}-${index}`}
+                        to={getDocHref(doc.slug)}
+                        className="home-marquee-card group rounded-2xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-black/10 hover:bg-white dark:border-slate-700/60 dark:bg-slate-900/60 dark:hover:border-slate-600/80 dark:hover:bg-slate-900/85"
+                      >
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <span className="rounded-full bg-black/5 px-2 py-0.5 dark:bg-slate-800/90">
+                            {category}
+                          </span>
+                          {primaryDate ? <span>{primaryDate}</span> : null}
+                        </div>
+                        <p className="mt-3 line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white">
+                          {doc.title}
+                        </p>
+                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-300">
+                          {doc.description ?? "查看文章内容"}
+                        </p>
+                      </Link>
+                    );
+                  })}
                 </div>
-                <p className="mt-3 line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white">
-                  {doc.title}
-                </p>
-                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-300">
-                  {doc.description ?? "查看文章内容"}
-                </p>
-              </Link>
+              </div>
             );
           })}
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-2xl border border-black/5 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <section className="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-2xl border border-black/5 bg-white/80 p-6 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/60">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
             <FileText className="h-4 w-4" />
             热门主题
@@ -410,7 +431,7 @@ export const HomePage = () => {
             {categoryStats.map(([name, count]) => (
               <span
                 key={name}
-                className="inline-flex items-center gap-1 rounded-full border border-black/5 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
+                className="inline-flex items-center gap-1 rounded-full border border-black/5 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm dark:border-slate-700/70 dark:bg-slate-800/80 dark:text-slate-200"
               >
                 {name}
                 <span className="text-[10px] text-slate-400 dark:text-slate-400">
@@ -421,7 +442,7 @@ export const HomePage = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-black/5 bg-slate-900 p-6 text-white shadow-sm">
+        <div className="rounded-2xl border border-black/5 bg-slate-900 p-6 text-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900/80">
           <div className="text-sm font-semibold">快速入口</div>
           <p className="mt-2 text-xs text-white/70">
             继续阅读、探索导航或了解站点信息。
@@ -429,21 +450,21 @@ export const HomePage = () => {
           <div className="mt-4 grid gap-3">
             <Link
               to="/docs"
-              className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20"
+              className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20 dark:bg-slate-800/85 dark:hover:bg-slate-700"
             >
               文档中心
               <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
               to="/navigate"
-              className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20"
+              className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20 dark:bg-slate-800/85 dark:hover:bg-slate-700"
             >
               站点导航
               <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
               to="/about"
-              className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20"
+              className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20 dark:bg-slate-800/85 dark:hover:bg-slate-700"
             >
               关于本站
               <ArrowUpRight className="h-4 w-4" />

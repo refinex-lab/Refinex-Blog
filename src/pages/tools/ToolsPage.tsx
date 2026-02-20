@@ -331,7 +331,7 @@ export const ToolsPage = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-6 py-8">
+    <div className="mx-auto flex w-full flex-col gap-6 px-6 py-8">
       <section className="sticky top-[84px] z-20 flex flex-col gap-3 rounded-[24px] border border-black/5 bg-white/85 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/70">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -396,7 +396,7 @@ export const ToolsPage = () => {
               </span>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {group.items.map((tool) => {
                 const isReady = READY_ROUTES.has(tool.route);
                 const iconId =

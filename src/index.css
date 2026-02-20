@@ -139,3 +139,53 @@ body {
 .dark .tool-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.56);
 }
+
+@keyframes home-marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes home-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.home-marquee-row {
+  overflow: hidden;
+}
+
+.home-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+  animation: home-marquee-left 36s linear infinite;
+  will-change: transform;
+}
+
+.home-marquee-track-reverse {
+  animation-name: home-marquee-right;
+}
+
+.home-marquee-card {
+  width: min(320px, calc(100vw - 4rem));
+  flex-shrink: 0;
+}
+
+.home-marquee:hover .home-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-marquee-track,
+  .home-marquee-track-reverse {
+    animation: none;
+  }
+}
