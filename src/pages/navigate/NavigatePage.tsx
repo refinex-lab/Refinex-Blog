@@ -98,7 +98,7 @@ const SiteIcon = ({
 
   return (
     <div
-      className="flex items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-white/80 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-slate-50"
+      className="flex items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-white/80 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70 dark:text-slate-50"
       style={{ width: size, height: size }}
     >
       {resolvedIconSrc && !failed ? (
@@ -151,8 +151,8 @@ const CategoryButton = ({
         disabled
           ? "cursor-not-allowed text-slate-300 dark:text-slate-600"
           : active
-            ? "bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-slate-50"
+            ? "bg-slate-200 text-slate-900 dark:bg-slate-800/90 dark:text-slate-50"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70 dark:hover:text-slate-50"
       }`}
     >
       <span className="truncate">{label}</span>
@@ -284,7 +284,7 @@ export const NavigatePage = () => {
 
   return (
     <>
-      <div className="mx-auto flex h-[calc(100vh-72px)] w-full max-w-[1200px] flex-col gap-4 overflow-hidden px-6 py-6 lg:py-8">
+      <div className="mx-auto flex h-[calc(100vh-72px)] w-full flex-col gap-4 overflow-hidden px-6 py-6 lg:py-8">
         <div className="p-0">
           <form
             className="flex flex-col gap-3"
@@ -293,7 +293,7 @@ export const NavigatePage = () => {
               handleSearch();
             }}
           >
-            <div className="flex w-full items-center overflow-visible rounded-2xl border border-black/10 bg-white shadow-sm transition-colors focus-within:border-black/20 dark:border-white/10 dark:bg-white/5 dark:focus-within:border-white/25">
+            <div className="flex w-full items-center overflow-visible rounded-2xl border border-black/10 bg-white shadow-sm transition-colors focus-within:border-black/20 dark:border-slate-700/60 dark:bg-slate-900/70 dark:focus-within:border-slate-500/80">
               <div ref={engineRef} className="relative z-30">
                 <button
                   type="button"
@@ -318,7 +318,7 @@ export const NavigatePage = () => {
                 {engineOpen ? (
                   <div
                     role="listbox"
-                    className="absolute left-0 z-50 mt-2 w-52 rounded-2xl border border-black/10 bg-white p-2 text-xs shadow-2xl dark:border-white/10 dark:bg-slate-950"
+                    className="absolute left-0 z-50 mt-2 w-52 rounded-2xl border border-black/10 bg-white p-2 text-xs shadow-2xl dark:border-slate-700/60 dark:bg-slate-900"
                   >
                     <div className="space-y-1">
                       {SEARCH_ENGINES.map((item) => {
@@ -339,8 +339,8 @@ export const NavigatePage = () => {
                             }}
                             className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition ${
                               active
-                                ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white"
-                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white"
                             }`}
                           >
                             <div className="flex items-center gap-2">
@@ -415,7 +415,7 @@ export const NavigatePage = () => {
                   : "外部搜索不影响本页列表"}
               </p>
             </div>
-            <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+            <div className="tool-scrollbar flex-1 space-y-1 overflow-y-auto pr-1">
               {categories.map((cat) => {
                 const count = categoryCountMap.get(cat.id) ?? 0;
                 const disabled = cat.id !== ALL_CATEGORY_ID && count === 0;
@@ -443,7 +443,7 @@ export const NavigatePage = () => {
                       href={site.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70 dark:hover:text-white"
                     >
                       <SiteIcon
                         title={site.title}
@@ -463,7 +463,7 @@ export const NavigatePage = () => {
         </Card>
       </aside>
 
-        <section className="h-full space-y-4 overflow-y-auto pr-3 pb-4">
+        <section className="tool-scrollbar h-full space-y-4 overflow-y-auto pr-3 pb-4">
           {activeCategory !== ALL_CATEGORY_ID ? (
             <div className="space-y-1">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -489,7 +489,7 @@ export const NavigatePage = () => {
                     href={site.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative flex h-full flex-col justify-between rounded-2xl border border-black/5 bg-white/80 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-black/10 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:border-white/10 dark:bg-white/10 dark:hover:border-white/20 dark:hover:bg-white/15 dark:focus-visible:ring-white/20"
+                    className="group relative flex h-full flex-col justify-between rounded-2xl border border-black/5 bg-white/80 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-black/10 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:border-slate-700/60 dark:bg-slate-900/55 dark:hover:border-slate-600/80 dark:hover:bg-slate-900/80 dark:focus-visible:ring-slate-500/60"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
@@ -512,11 +512,11 @@ export const NavigatePage = () => {
 
                       </div>
 
-                      <p className="mt-3 line-clamp-2 text-[13px] leading-6 text-slate-600 dark:text-slate-100/80">
+                      <p className="mt-3 line-clamp-2 text-[13px] leading-6 text-slate-600 dark:text-slate-200/85">
                         {description}
                       </p>
                     </div>
-                    <span className="pointer-events-none absolute bottom-3 right-3 inline-flex translate-y-1 items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+                    <span className="pointer-events-none absolute bottom-3 right-3 inline-flex translate-y-1 items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 dark:bg-slate-800 dark:text-slate-100">
                       前往
                       <FiArrowUpRight className="h-3 w-3" />
                     </span>
@@ -536,7 +536,7 @@ export const NavigatePage = () => {
                 <div className="mt-4">
                   <button
                     type="button"
-                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                     onClick={() => {
                       setQuery("");
                       setActiveCategory(ALL_CATEGORY_ID);
