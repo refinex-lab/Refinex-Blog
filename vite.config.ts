@@ -7,6 +7,10 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import monacoEditorPluginImport from "vite-plugin-monaco-editor";
+
+const monacoEditorPlugin =
+  (monacoEditorPluginImport as any).default ?? monacoEditorPluginImport;
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -36,5 +40,14 @@ export default defineConfig({
     }),
     react(),
     tailwindcss(),
+    monacoEditorPlugin({
+      languageWorkers: [
+        "editorWorkerService",
+        "typescript",
+        "json",
+        "html",
+        "css",
+      ],
+    }),
   ],
 });

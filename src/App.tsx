@@ -16,6 +16,31 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { useTheme } from "./providers/useTheme";
 import { AboutPage } from "./pages/about/AboutPage";
 import { AiHubPage } from "./pages/ai/AiHubPage";
+import { ToolsPage } from "./pages/tools/ToolsPage";
+import { JsonToolPage } from "./pages/tools/JsonToolPage";
+import { DiffToolPage } from "./pages/tools/DiffToolPage";
+import { Base64ToolPage } from "./pages/tools/Base64ToolPage";
+import { UrlEncodeToolPage } from "./pages/tools/UrlEncodeToolPage";
+import { JwtToolPage } from "./pages/tools/JwtToolPage";
+import { UuidToolPage } from "./pages/tools/UuidToolPage";
+import { HashToolPage } from "./pages/tools/HashToolPage";
+import { RegexToolPage } from "./pages/tools/RegexToolPage";
+import { CronToolPage } from "./pages/tools/CronToolPage";
+import { TimestampToolPage } from "./pages/tools/TimestampToolPage";
+import { DateCalcToolPage } from "./pages/tools/DateCalcToolPage";
+import { ImageConvertToolPage } from "./pages/tools/ImageConvertToolPage";
+import { ImageCompressToolPage } from "./pages/tools/ImageCompressToolPage";
+import { ImageBase64ToolPage } from "./pages/tools/ImageBase64ToolPage";
+import { ColorPickerToolPage } from "./pages/tools/ColorPickerToolPage";
+import { HttpStatusToolPage } from "./pages/tools/HttpStatusToolPage";
+import { IpToolPage } from "./pages/tools/IpToolPage";
+import { UserAgentToolPage } from "./pages/tools/UserAgentToolPage";
+import { SignatureToolPage } from "./pages/tools/SignatureToolPage";
+import { CalculatorToolPage } from "./pages/tools/CalculatorToolPage";
+import { WhiteboardToolPage } from "./pages/tools/WhiteboardToolPage";
+import { LinuxToolPage } from "./pages/tools/LinuxToolPage";
+import { MimeToolPage } from "./pages/tools/MimeToolPage";
+import { HttpHeaderToolPage } from "./pages/tools/HttpHeaderToolPage";
 import { HomePage } from "./pages/home/HomePage";
 import { NavigatePage } from "./pages/navigate/NavigatePage";
 import { DocsPage } from "./pages/docs/DocsPage";
@@ -214,6 +239,31 @@ const AppShell = () => {
           <Route path="/ai" element={<AiHubPage />} />
           <Route path="/docs/*" element={<DocsPage />} />
           <Route path="/navigate" element={<NavigatePage />} />
+          <Route path="/tools" element={<ToolsPage />} />
+          <Route path="/tools/json" element={<JsonToolPage />} />
+          <Route path="/tools/diff" element={<DiffToolPage />} />
+          <Route path="/tools/base64" element={<Base64ToolPage />} />
+          <Route path="/tools/url-encode" element={<UrlEncodeToolPage />} />
+          <Route path="/tools/jwt" element={<JwtToolPage />} />
+          <Route path="/tools/uuid" element={<UuidToolPage />} />
+          <Route path="/tools/hash" element={<HashToolPage />} />
+          <Route path="/tools/regex" element={<RegexToolPage />} />
+          <Route path="/tools/cron" element={<CronToolPage />} />
+          <Route path="/tools/timestamp" element={<TimestampToolPage />} />
+          <Route path="/tools/date-calc" element={<DateCalcToolPage />} />
+          <Route path="/tools/image-convert" element={<ImageConvertToolPage />} />
+          <Route path="/tools/image-compress" element={<ImageCompressToolPage />} />
+          <Route path="/tools/image-base64" element={<ImageBase64ToolPage />} />
+          <Route path="/tools/color-picker" element={<ColorPickerToolPage />} />
+          <Route path="/tools/http-status" element={<HttpStatusToolPage />} />
+          <Route path="/tools/ip" element={<IpToolPage />} />
+          <Route path="/tools/user-agent" element={<UserAgentToolPage />} />
+          <Route path="/tools/signature" element={<SignatureToolPage />} />
+          <Route path="/tools/calculator" element={<CalculatorToolPage />} />
+          <Route path="/tools/whiteboard" element={<WhiteboardToolPage />} />
+          <Route path="/tools/linux" element={<LinuxToolPage />} />
+          <Route path="/tools/mime" element={<MimeToolPage />} />
+          <Route path="/tools/http-header" element={<HttpHeaderToolPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>
       </main>

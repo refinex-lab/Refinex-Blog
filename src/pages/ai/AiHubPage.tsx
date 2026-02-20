@@ -71,10 +71,10 @@ const AiIcon = ({ label, iconId }: { label: string; iconId: string }) => {
       setReady(hasIconFontSymbol(iconId));
     };
     check();
-    const timer = window.setTimeout(check, 600);
+    const timer = globalThis.setTimeout(check, 600);
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
+      globalThis.clearTimeout(timer);
     };
   }, [iconId]);
 
@@ -91,6 +91,9 @@ const AiIcon = ({ label, iconId }: { label: string; iconId: string }) => {
 
 export const AiHubPage = () => {
   const [activeId, setActiveId] = useState<Provider["id"]>(providers[0].id);
+  const [iframeState, setIframeState] = useState<"idle" | "loading" | "loaded" | "blocked">(
+    "idle"
+  );
 
   const activeProvider = useMemo(
     () => providers.find((item) => item.id === activeId) ?? providers[0],
@@ -98,6 +101,24 @@ export const AiHubPage = () => {
   );
 
   const canEmbed = activeProvider.allowEmbed ?? false;
+
+  useEffect(() => {
+    if (!canEmbed) {
+      setIframeState("blocked");
+      return;
+    }
+
+    setIframeState("loading");
+    const timer = globalThis.setTimeout(() => {
+      setIframeState((prev) => (prev === "loaded" ? prev : "blocked"));
+    }, 4500);
+
+    return () => {
+      globalThis.clearTimeout(timer);
+    };
+  }, [activeProvider.id, canEmbed]);
+
+  const showIframe = canEmbed && iframeState !== "blocked";
 
   return (
     <div className="flex h-[calc(100vh-72px)] w-full flex-col px-2 pb-2 pt-2 sm:px-3 sm:pb-3 sm:pt-3">
@@ -147,22 +168,32 @@ export const AiHubPage = () => {
             )}
           </div>
           <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-950">
-            {canEmbed ? (
-              <iframe
-                key={activeProvider.id}
-                src={activeProvider.href}
-                title={activeProvider.label}
-                className="block h-full w-full border-0"
-                referrerPolicy="no-referrer"
-              />
+            {showIframe ? (
+              <>
+                <iframe
+                  key={activeProvider.id}
+                  src={activeProvider.href}
+                  title={activeProvider.label}
+                  className="block h-full w-full border-0"
+                  referrerPolicy="no-referrer"
+                  onLoad={() => setIframeState("loaded")}
+                />
+                {iframeState === "loading" ? (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/60 text-xs font-semibold text-slate-500 backdrop-blur-sm dark:bg-slate-950/50 dark:text-slate-300">
+                    正在尝试安全嵌入...
+                  </div>
+                ) : null}
+              </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.18),transparent_55%)] p-6 text-center dark:bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.12),transparent_55%)]">
                 <div className="max-w-md space-y-3">
                   <div className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                    当前站点限制内嵌显示
+                    {canEmbed
+                      ? "目标站点阻止了 iframe 嵌入"
+                      : "当前站点限制内嵌显示"}
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-300">
-                    点击下方按钮在新窗口打开，体验不受限制。
+                    浏览器同源与站点安全策略生效中，建议在新窗口打开以获得完整体验。
                   </p>
                   <a
                     href={activeProvider.href}

@@ -80,6 +80,7 @@ export const siteConfig: SiteConfig = {
     { label: "首页", href: "/" },
     { label: "文档", href: "/docs" },
     { label: "导航", href: "/navigate" },
+    { label: "工具", href: "/tools" },
     { label: "关于", href: "/about" },
   ],
   // 菜单
@@ -99,7 +100,7 @@ export const siteConfig: SiteConfig = {
   ],
   // iconfont（可选）：填入地址后会自动注入到页面 head
   iconfont: {
-    scriptUrl: "//at.alicdn.com/t/c/font_5127285_6jl1i839jdo.js",
+    scriptUrl: "//at.alicdn.com/t/c/font_5127285_38fxqegjtsa.js",
     // cssUrl: "https://at.alicdn.com/t/c/font_XXXXXX_XXXXXX.css",
   },
   // 主题配置

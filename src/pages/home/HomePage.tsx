@@ -148,7 +148,7 @@ export const HomePage = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 px-6 py-10">
-      <section className="relative overflow-visible rounded-[28px] border-black/5 bg-white/80 p-8 backdrop-blur dark:border-white/10 dark:bg-slate-950/60">
+      <section className="relative overflow-visible rounded-[28px] border-black/5 bg-white/80 p-0 backdrop-blur dark:border-white/10 dark:bg-slate-950/60">
         <div className="pointer-events-none absolute -left-10 top-[-120px] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.18),rgba(255,255,255,0))] blur-3xl" />
         <div className="pointer-events-none absolute right-[-80px] top-[20%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.16),rgba(255,255,255,0))] blur-3xl" />
 
