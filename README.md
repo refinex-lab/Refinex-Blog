@@ -1,6 +1,6 @@
 # Refinex Blog
 
-基于 **React + TypeScript + Tailwind CSS + Radix UI** 的前端技术博客初始化项目。内置基础页面结构与 Radix Dialog 示例，便于快速二次开发。
+基于 **React + TypeScript + Tailwind CSS + Radix UI** 的前端技术博客初始化项目。
 
 ![](/public/readme/readme-light-home.png)
 
