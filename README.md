@@ -2,6 +2,8 @@
 
 基于 **React + TypeScript + Tailwind CSS + Radix UI** 的前端技术博客初始化项目。内置基础页面结构与 Radix Dialog 示例，便于快速二次开发。
 
+![](/public/readme/readme-light-home.png)
+
 ## 技术栈
 
 - React 19 + TypeScript
@@ -40,7 +42,3 @@ npm run lint     # 代码检查
 │   └── main.tsx       # 入口文件
 └── vite.config.ts
 ```
-
-## Tailwind 配置
-
-使用 Tailwind CSS v4 + `@tailwindcss/vite` 插件，样式入口在 `src/index.css` 中通过 `@import "tailwindcss"` 引入。
