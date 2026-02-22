@@ -1,0 +1,363 @@
+---
+title: Spring AI 核心概念
+description: 
+author: Refinex
+createdAt: 2026-02-22
+updatedAt: 2026-02-22
+---
+
+# Spring AI 核心概念
+
+在上一篇中，我们通过 Spring AI 向大模型世界发出了第一声问候。但在正式深入代码细节之前，我们需要先 "对齐颗粒度"。
+
+很多 Java 开发者在接触 AI 时，往往会被 Token、Embedding、RAG 这些术语劝退。**本节不是枯燥的词典解释，而是为你构建一张从 "传统开发" 通往 "AI 开发" 的认知地图。** 搞懂这些，你才能明白 Spring AI 的 API 为什么要设计成那个样子。
+
+<Callout type="warning" title="">
+  本文涉及到的简单代码示例，是帮助你理解，你不必亲自上手，后续有专门的章节详细介绍，先理解再 Coding，才能知其然，知其所以然。
+</Callout>
+
+## 1. LLM / Models（大模型）
+
+**LLM（Large Language Model）**，中文直译为 "大语言模型"。如果把 AI 应用比作一辆车，Spring AI 是底盘和传动系统，而 LLM 就是**发动机**。
+
+它是基于深度学习、利用海量数据 "预训练（Pre-trained）" 出来的神经网络。这里的 "P（Pre-trained）" 是关键——它意味着你不需要自己去训练一个模型（那是算法工程师的事），你只需要 "拿来用"。这也是为什么很多模型都有数据截止时间的原因，例如最新的 DeepSeek 目前的数据截止时间是 2025 年 5 月。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/3a6bw4.png)
+
+Spring AI 的设计初衷就是让你能随时更换这台发动机（LLM）。在它的视野里，OpenAI、Anthropic、Google、DeepSeek 都只是众多 "发动机供应商" 之一。你的业务代码写在 Spring AI 的抽象层上，底层供应商差异被压到配置层。
+
+模型分类（按输入/输出）：
+
+| **模型类型** | **输入（Input）** | **输出（Output）** | **典型代表** |
+| --- | --- | --- | --- |
+| **Chat / Language** | 文本（+ 可选的图片/文件） | 文本 | GPT-4o、DeepSeek、Claude |
+| **Text-to-Image** | 文本 | 图像 | DALL·E 3、Midjourney |
+| **Text-to-Speech（TTS）** | 文本 | 音频 | OpenAI TTS、Azure TTS |
+| **Audio Transcription（STT）** | 音频 | 文本 | OpenAI Whisper |
+| **Embedding** | 文本 | 向量（`float\[\]`） | text-embedding-3-small |
+| **Moderation** | 文本 | 分类标签 + 置信度 | OpenAI Moderation |
+
+来看看 Spring 官方根据输入和输出类型整理的分类图：
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/vexjtu.png)
+
+<Callout type="tip" title="工程提示">
+  不要只盯着 ChatGPT。国内的 DeepSeek、阿里的通义千问等模型在中文理解和性价比上往往更具优势。Spring AI 的价值在于，你可以用同一套代码，早上跑 OpenAI，下午切成 DeepSeek——前提是你只用通用抽象覆盖的那部分能力（参见上一篇 "可移植边界表"）。
+</Callout>
+
+## 2. Tokens（令牌）
+
+在 Java 里，我们习惯按 "字符" 或 "字节" 算长度，但在 AI 的世界里，计量单位是 **Token**。
+
+### 2.1 什么是 Token
+
+Token 是模型处理文本的**最小原子单位**。它不等于 "字" 也不等于 "词"，而是**分词器（Tokenizer）切出来的片段**。
+
+粗略换算：
+
+- 英文：1 Token $\approx$ 0.75 个单词（即 1 个英文单词大约 1.3 个 Token）
+- 中文：1 个汉字 $\approx$ 1~2 个 Token（取决于具体模型的分词器）
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/ffe0b4.png)
+
+每个模型的分词器不同，同一段文本在不同模型里会产生不同的 Token 数量。如果你用 OpenAI 的模型，可以用官方 Tokenizer 工具实测：[https://platform.openai.com/tokenizer](https://platform.openai.com/tokenizer)
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/277zds.png)
+
+### 2.2 Token 为什么重要：钱和 "内存"
+
+Token 对工程的影响集中在两件事上：
+
+**成本**
+
+API 按 Token 计费，输入和输出**分别计价**，而且输出 Token 通常比输入 Token 贵（以 GPT-4o 为例，输出价格约为输入的 3~4 倍）。这意味着：让模型 "废话少说" 不仅是体验问题，也是成本问题。
+
+**上下文窗口（Context Window）**
+
+每个模型都有 "内存上限"。比如 GPT-4o 的 128K 窗口，意味着一次请求中所有内容（System Message + 历史对话 + 检索到的文档片段 + 用户问题 + 模型回答）的 Token 总量不能超过这个限制。超了怎么办？模型不会报错，但早期的上下文会被截断——模型会 "失忆"。
+
+<Callout type="tip" title="工程提示">
+  在生产系统里，你需要一套截断或摘要策略来管理上下文窗口。Spring AI 的 Chat Memory 机制就是为此而生的（后面会讲到）。
+</Callout>
+
+## 3. Prompts & Messages（提示词与消息）
+
+以前我们写 SQL 查询数据库，现在我们写 **Prompt** 查询大模型。但和 SQL 不同，Prompt 里的 "角色分配" 直接决定了模型的行为模式。
+
+### 3.1 Message 的三种角色
+
+在 Spring AI 中（以及几乎所有 Chat API 中），一次对话由一组 **Message** 组成，每条 Message 都有明确的角色：
+
+- **System Message**：系统的 "人设"。放在对话最前面，用来定义模型的身份、行为约束和输出格式（例如："你是一个资深 Java 架构师，回答时给出代码示例"）。
+- **User Message**：用户的具体问题或指令。
+- **Assistant Message**：模型之前的回答。在多轮对话中，你把历史的 User + Assistant 消息对一起发给模型，它才能 "记住" 上下文。在 few-shot 场景中，你也可以手动构造 Assistant Message 作为示例。
+
+<Callout type="tip" title="提示">
+  理解这三种角色，如果你尝试看过源码，你就理解了为什么 Spring AI 的 `Prompt` 对象接受的是 `List<Message>` 而不是一个简单的 `String`。
+</Callout>
+
+### 3.2 PromptTemplate：让提示词可维护
+
+在代码中硬编码 Prompt 字符串是一种脆弱的做法。Spring AI 引入了模板机制来管理提示词，类似 Spring MVC 里的 View 层：
+
+```java
+// 模板：用 {language} 写一个关于 {topic} 的算法
+PromptTemplate template = new PromptTemplate(
+    "用 {language} 写一个关于 {topic} 的算法"
+);
+
+// 模版参数
+Map<String, Object> params = Map.of(
+    "language", "Java",
+    "topic", "冒泡排序"
+);
+
+// 创建提示词
+Prompt prompt = template.create(params);
+```
+
+这让 Prompt 具备了**可维护性**和**动态性**——模板可以放在资源文件里统一管理，参数在运行时注入。
+
+<Callout type="tip" title="提示">
+  Spring AI 的模板引擎底层使用了 [StringTemplate](https://www.stringtemplate.org/)——一个专门用来生成格式化文本输出的 Java 模板引擎，和 Thymeleaf、FreeMarker 类似但更轻量。
+</Callout>
+
+## 4. 给模型补充知识的四种手段
+
+大模型有两个致命弱点：
+
+1. **知识过时**：训练数据有截止日期，它不知道 "昨天发生了什么"。
+2. **不知道私有数据**：它不知道你们公司的请假流程、产品文档或客户订单。
+
+要解决这个问题，我们需要 "投喂数据"。目前主流有四种手段，它们不是互斥的，而是**根据场景组合使用**：
+
+### 4.1 Fine-tuning（微调）
+
+- **原理**：拿你的数据去重新训练模型的一小部分权重，让模型 "学会" 特定领域的知识或行为模式。
+- **适用场景**：需要模型学会一种特定的 "风格" 或 "格式"（比如让它写出符合你公司规范的代码），或者通用模型在你的垂直领域表现不够好。
+- **代价**：成本高、周期长、需要标注数据、需要一定的算法工程能力。对于大多数业务应用，这不是首选。
+
+### 4.2 Prompt Stuffing（提示词填充）
+
+- **原理**：把相关资料直接拼进 Prompt 发给模型——本质上是 "开卷考试"。
+- **适用场景**：上下文不大、需要快速验证的场景。
+- **代价**：受限于 Token 窗口。如果你的文档有几十万字，塞不进去。而且全塞进去的 Token 成本也很可观。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/1makpu.png)
+
+### 4.3 RAG（检索增强生成）
+
+- **原理**：先从向量数据库里检索出和问题最相关的文档片段，再把片段拼进 Prompt。相比 Prompt Stuffing，它只喂 "相关" 的部分，而不是全部。
+- **适用场景**：**企业级 AI 应用的主流选择**。知识库问答、文档检索、客服系统基本都用这个。
+- **代价**：需要建向量库、做文档切分（chunking）、维护 embedding 索引。
+
+### 4.4 Tool Calling（工具调用 / Function Calling）
+
+- **原理**：**给 AI 装上 "手"**。模型可以决定调用你写的 Java 方法（比如 `getOrderStatus()`），获取实时数据或执行操作，再基于真实结果生成回答。
+- **适用场景**：需要实时数据（查库存、查天气、查订单）、或需要执行动作（创建工单、发邮件）的场景。这是大模型从 "聊天机器人" 进化为 "智能体（Agent）" 的关键。
+- **代价**：工具调用的协议细节在不同模型提供商之间有差异，可移植性不如 Chat 调用那么好。
+
+### 选型速查表
+
+| **手段** | **解决什么** | **成本** | **复杂度** | **推荐优先级** |
+| --- | --- | --- | --- | --- |
+| Prompt Stuffing | 小量上下文补充 | 低（但 Token 费随量增长） | 极低 | 快速验证首选 |
+| RAG | 大量私有知识检索 | 中（向量库 + embedding） | 中 | **企业应用首选** |
+| Tool Calling | 实时数据 + 执行操作 | 低 | 中 | 需要 "动手" 时必选 |
+| Fine-tuning | 领域风格 / 深度知识 | 高 | 高 | 通用模型不够好时再考虑 |
+
+<Callout type="tip" title="工程提示">
+  实践中这四种手段经常组合使用。一个典型的企业 AI 应用可能同时用 RAG 检索文档、用 Tool Calling 查实时数据、用精心设计的 System Prompt 约束输出格式。
+</Callout>
+
+## 5. RAG 深入：检索增强生成
+
+**RAG（Retrieval Augmented Generation，检索增强生成）** 是目前企业级 AI 应用最主流的架构模式。上一节讲了 "为什么需要 RAG"，这一节讲 "RAG 怎么工作"。
+
+### 5.1 核心三步
+
+1. **Retrieve（检索）**：用户提问时，先把问题做 Embedding（嵌入/向量化），然后去向量数据库（Vector Store）里找语义最相近的文档片段。
+2. **Augment（增强）**：把检索到的片段作为背景知识，拼接到 Prompt 里（通常放在 System Message 或 User Message 的前面）。
+3. **Generate（生成）**：大模型基于这些 "开卷考试" 的资料生成答案，而不是凭空编造。
+
+### 5.2 数据准备：Spring AI 的 ETL 管道
+
+在 RAG 生效之前，你需要先把企业文档 "灌" 进向量库。Spring AI 提供了一套 ETL 管道来做这件事：
+
+1. **DocumentReader**：从各种来源（PDF、Markdown、HTML、数据库）读取原始文档。
+2. **DocumentTransformer**：对文档做切分（chunking）、清洗、元数据标注。
+3. **VectorStore Writer**：对每个文档片段生成 Embedding 向量，写入向量库。
+
+<Callout type="tip" title="工程提示">
+  程上最容易踩的坑是**切分策略**：切太大则检索精度低（一大段里只有一句话相关），切太小则丢失上下文（模型看到的片段缺少必要的前后文）。这个需要根据你的文档特点反复调试。
+</Callout>
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/e0wvq6.png)
+
+## 6. Embeddings（嵌入 / 向量化）
+
+要实现 RAG，必须理解 **Embedding**。
+
+### 6.1 通俗解释
+
+计算机不懂 "苹果" 和 "香蕉" 很像，但它懂 "数字"。Embedding 就是把一段文本变成一个高维向量（比如 `float[] {0.1, 0.9, -0.5, ...}`，维度通常是 768 到 3072 不等）。
+
+**核心作用：计算语义相似度。** 在向量空间里，"猫" 和 "狗" 的距离很近，和 "汽车" 的距离很远。向量数据库正是利用这一点来做 "语义检索"——不是匹配关键词，而是匹配含义。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/apei7d.png)
+
+### 6.2 在 Spring AI 中怎么用
+
+Spring AI 把 Embedding 操作封装成了 **`EmbeddingModel`** 接口（注意：早期版本叫 `EmbeddingClient`，1.0.x 之后已更名为 `EmbeddingModel`）。
+
+你需要知道的工程要点：
+
+- **存入向量库前要 Embedding，查询问题时也要 Embedding**，两端必须用同一个 Embedding 模型，否则向量空间不一致，检索结果会很差。
+- 不同 Embedding 模型产出的**向量维度不同**（比如 OpenAI 的 `text-embedding-3-small` 是 1536 维），换模型意味着要重建向量索引。
+- 不需要去研究背后的数学原理。Spring AI 已经封装好了，你关注 "用哪个模型" 和 "怎么管理索引" 就够了。
+
+## 7. Tool Calling（工具调用）
+
+Tool Calling 是大模型从 "只会说" 到 "能动手" 的关键能力。
+
+### 7.1 交互流程
+
+```
+用户提问  → 模型判断需要调用工具
+         → 模型返回 "请调用 getOrderStatus(orderId=123)"
+         → 你的应用执行该 Java 方法，拿到真实数据
+         → 把执行结果发回给模型
+         → 模型基于真实数据组织最终回答
+```
+
+关键点：**模型本身并不执行任何代码**。它只是 "决定" 要调哪个工具、传什么参数，实际执行发生在你的应用里。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/jd0jgl.png)
+
+### 7.2 在 Spring AI 中怎么用
+
+Spring AI 提供了 `@Tool` 注解，让你用最少的代码把一个 Java 方法注册给大模型：
+
+```java
+@Tool(description = "查询指定订单的当前状态")
+public String getOrderStatus(String orderId) {
+    // 调用你的业务服务查询订单
+    return orderService.getStatus(orderId);
+}
+```
+
+Spring AI 会自动把方法签名、参数类型、描述信息转换成模型能理解的工具定义（Tool Definition），并在模型触发调用时自动执行。
+
+<Callout type="warning" title="边界提醒">
+  Tool Calling 的协议细节在不同模型提供商之间有差异（参数约束、并行调用支持、工具 schema 格式等）。Spring AI 在通用层面做了抽象，但如果你用到复杂的多工具编排，仍然需要关注供应商差异。
+</Callout>
+
+## 8. Structured Output（结构化输出）
+
+这是让后端开发最头疼的问题：AI 喜欢 "喋喋不休" 地输出一段话，但我们需要的是一个干净的 JSON 对象存入数据库。
+
+### 8.1 以前怎么做
+
+在 Prompt 里反复强调 "请只返回 JSON，不要废话..."，然后写正则或手动解析——既不可靠，也不优雅。
+
+### 8.2 Spring AI 怎么做
+
+Spring AI 提供了多种方式来拿到结构化输出：
+
+**方式一：`ChatClient.entity()`（推荐）**
+
+最简洁的方式，直接告诉 `ChatClient` 你期望的返回类型：
+
+```java
+User user = chatClient
+    .prompt("从以下文本中提取用户信息：张三，28岁，北京")
+    .call()
+    .entity(User.class);
+```
+
+Spring AI 会在底层自动做两件事：
+
+1. 在 Prompt 末尾附加一段指令，告诉模型按指定的 JSON Schema 输出。
+2. 把模型返回的 JSON 自动反序列化成你的 Java Bean。
+
+**方式二：`StructuredOutputConverter`**
+
+如果你需要更精细的控制（比如自定义转换逻辑、处理嵌套结构），可以用 `StructuredOutputConverter` 系列。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/k17pgu.png)
+
+<Callout type="warning" title="">
+  API 演进提醒：早期版本（1.0 之前的快照版）使用的是 `OutputParser` / `BeanOutputParser`，如果你看到旧文章提到这些类名，它们已被替换。请以你实际使用的 Spring AI 版本为准。
+</Callout>
+
+## 9. ChatClient 与 Advisors
+
+### 9.1 ChatClient：Spring AI 的核心入口
+
+如果你只记住一个 Spring AI API，那就是 **`ChatClient`**。
+
+它是与 AI 模型交互的统一入口，设计风格类似 `WebClient` 和 `RestClient`——流畅的链式 API：
+
+```java
+String answer = chatClient
+    .prompt()
+    .system("你是一个资深 Java 架构师")
+    .user("解释一下 Spring AOP 的实现原理")
+    .call()
+    .content();
+```
+
+`ChatClient` 不仅支持简单的问答，还支持流式输出（`.stream()`）、结构化输出（`.entity()`）、工具调用、Advisor 链等高级功能。后续实战篇会展开讲。
+
+### 9.2 Advisors：可复用的 AI 中间件
+
+**Advisors** 是 Spring AI 中一个很有 Spring 味道的设计。你可以把它理解成 AI 调用链上的 "拦截器" 或 "切面"：
+
+- 在请求发送给模型**之前**，Advisor 可以修改 Prompt（比如注入检索到的文档片段、添加对话历史、改写格式指令）。
+- 在模型返回结果**之后**，Advisor 可以对输出做变换（比如过滤敏感信息、格式化、记录日志）。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/jvdgha.png)
+
+Spring AI 内置了一些常用 Advisor，比如用于 RAG 的 `QuestionAnswerAdvisor`、用于对话记忆的 `MessageChatMemoryAdvisor` 等。你也可以自定义 Advisor 来封装你的业务逻辑。
+
+<Callout type="tip" title="类比思考">
+  这和 Spring MVC 的 `HandlerInterceptor`、Spring Security 的 `Filter` 是同一种思路：把横切关注点从业务代码里剥离出来，形成可组合、可复用的组件。
+</Callout>
+
+## 10. Chat Memory（对话记忆）
+
+大模型本身是**无状态**的——每次请求都是独立的，它不会 "记住" 你上一轮说了什么。
+
+要实现多轮对话，你必须在每次请求中把之前的对话历史一起发过去。这就是为什么前面 Prompt 部分要讲 Assistant Message：历史对话本质上就是一组 User + Assistant Message 对。
+
+**问题来了**：对话越长，Token 越多，直到撑爆上下文窗口。
+
+Spring AI 的 **Chat Memory** 机制就是来解决这个问题的。它帮你管理对话历史的存储和截断策略：
+
+- **存哪里**：内存、Redis、数据库等（通过 `ChatMemory` 接口的不同实现）。
+- **怎么截**：保留最近 N 轮、按 Token 数限制、或者用摘要压缩历史等。
+
+在代码中通常通过 Advisor 来使用：
+
+```java
+ChatClient chatClient = ChatClient.builder(chatModel)
+    .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
+    .build();
+```
+
+配置好之后，Spring AI 会自动在每次请求时注入历史消息，你不需要手动管理。
+
+## 11. 总结
+
+最后，用一组比喻帮你把这些概念串起来：
+
+- **LLM** 是引擎，**Spring AI** 是底盘和传动系统。
+- **Token** 是油费，输出比输入更贵。
+- **Prompt** 是你发给引擎的指令，**Message** 是指令的基本格式（System / User / Assistant）。
+- **RAG** 是外挂知识库，**Embedding** 是知识库的索引算法。
+- **Tool Calling** 是 AI 的双手——让它能查数据、做操作。
+- **Structured Output** 是 AI 的翻译官——把自然语言变成你的 Java Bean。
+- **ChatClient** 是你和 AI 对话的统一窗口，**Advisors** 是这条对话链上的拦截器。
+- **Chat Memory** 是对话的 "短期记忆"，防止模型失忆。
+
+搞懂了这些概念，下一篇我们将正式进入**代码实战**环节，手把手用 Spring AI 接入 OpenAI，并实现一个简单的对话应用。

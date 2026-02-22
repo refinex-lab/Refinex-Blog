@@ -1,0 +1,424 @@
+---
+title: Spring AI 快速入门
+description: 
+author: Refinex
+createdAt: 2026-02-22
+updatedAt: 2026-02-22
+---
+
+# Spring AI 快速入门
+
+上一篇我们搞懂了核心术语，这一篇直接上手写代码。目标很明确：**用最少的步骤，跑通 Spring AI 的第一次对话调用**，然后理解这背后到底发生了什么。
+
+本节对应 Github 代码：
+
+<LinkCard href="https://github.com/refinex-lab/Refinex-SpringAI-Examples/tree/master/spring-ai-quickstart" />
+
+## 1. 环境要求
+
+在开始之前，先确认两个硬性条件，否则你会遇到各种诡异的编译或运行错误：
+
+| **条件** | **要求** | **说明** |
+| --- | --- | --- |
+| JDK | **17+**（推荐 21） | Spring Boot 3.x 的硬性要求。Java 21 有虚拟线程等收益，长期看是更好的选择。 |
+| Spring Boot | **3.4.x 或 3.5.x** | Spring AI 1.1.2 官方 Getting Started 推荐的版本范围。本文示例使用 3.5.9。 |
+| Spring AI | **1.1.2** | 截至本文写作时的最新 GA 版本。 |
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/ew5l4n.png)
+
+<Callout type="tip" title="">
+  Spring 生态更新极快。如果你使用的版本与本文不同，请务必查看 Spring AI 官方文档的 [Getting Started](https://docs.spring.io/spring-ai/reference/getting-started.html) / Compatibility 章节，确认 Spring Boot 与 Spring AI 的版本匹配关系。
+</Callout>
+
+## 2. 创建项目
+
+创建 Spring AI 项目不需要什么黑魔法，依然是我们熟悉的 "配方"。你可以用 IntelliJ IDEA 的 `File → New → Project → Spring Initializr`，也可以用 [start.spring.io](http://start.spring.io) 在线生成。
+
+为了后续系列文章中每个主题都能独立成模块，我们这里先用 **Maven 多模块**的方式创建一个父工程：
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/l0jzbf.png)
+
+然后在父工程下为本节创建子模块 `spring-ai-quickstart` ：
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/dog1wr.png)
+
+## 3. 依赖分析
+
+### 3.1 父工程 POM
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.9</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>cn.refinex</groupId>
+    <artifactId>Refinex-SpringAI-Examples</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Refinex-SpringAI-Examples</name>
+    <description>用于试验 Spring AI 集成及相关演示的示例项目。</description>
+
+    <modules>
+        <module>spring-ai-quickstart</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-ai.version>1.1.2</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring AI BOM：版本仲裁，确保所有 Spring AI 组件版本一致 -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+**关键点：`spring-ai-bom`**
+
+这是 Spring AI 的**版本仲裁者**（Bill of Materials）。有了它，你在子模块里引入 `spring-ai-starter-model-openai`、`spring-ai-starter-vector-store-xxx` 等依赖时，不需要手动写版本号——BOM 会确保所有 Spring AI 组件的版本一致，避免 "依赖地狱"。
+
+<Callout type="tip" title="">
+    如果你用过 Spring Cloud，这和 `spring-cloud-dependencies` BOM 是同一个思路。
+</Callout>
+
+### 3.2 子模块 POM（spring-ai-quickstart）
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cn.refinex</groupId>
+        <artifactId>Refinex-SpringAI-Examples</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>spring-ai-quickstart</artifactId>
+    <packaging>jar</packaging>
+    <name>spring-ai-quickstart</name>
+    <description>Spring AI Quickstart Example</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+**关键点：`spring-ai-starter-model-openai`**
+
+这是核心启动器（Starter）。引入它之后，Spring Boot 的自动配置会帮你完成以下事情：
+
+- 注册 `ChatModel` Bean（OpenAI 的对话模型实现）
+- 注册 `EmbeddingModel` Bean（OpenAI 的向量模型实现）
+- 注册 `ChatClient.Builder` Bean（你后面写代码时注入的就是它）
+- 读取 `spring.ai.openai.*` 配置，自动构建底层 HTTP 客户端
+
+<Callout type="tip" title="">
+    如果你想用 **DeepSeek** 或 **Moonshot（月之暗面）**，由于它们兼容 OpenAI 协议，通常也只需要引入这同一个依赖，改改 `base-url` 和 `api-key` 即可——这就是 "协议兼容" 的好处。
+</Callout>
+
+## 4. 配置密钥
+
+Spring AI 需要知道你的 API Key 才能向大模型发起请求。打开 `src/main/resources/application.yml`：
+
+```yaml
+spring:
+  application:
+    name: spring-ai-quickstart
+
+  ai:
+    openai:
+      # 必填：你的 API Key（通过环境变量注入，不要硬编码）
+      api-key: ${OPENAI_API_KEY}
+      # 选填：如果你用 DeepSeek 或中转代理，需要修改 base-url
+      # base-url: https://api.deepseek.com
+      chat:
+        options:
+          # 选填：全局默认模型
+          model: gpt-4o
+```
+
+<Callout type="warning" title="">
+**千万不要**直接把 `sk-xxxx` 这种密钥硬编码在代码或配置文件里提交到 Git！推荐做法如上所示，使用环境变量 `${OPENAI_API_KEY}`。
+
+**设置方式**：在 IDEA 的 `Run/Debug Configurations → Environment Variables` 里添加，或者在操作系统环境变量中配置。如果团队协作，可以配合 `.env` 文件 + `.gitignore` 使用。
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/sexvd8.png)
+
+</Callout>
+
+## 5. Hello World：两种方式跑通第一次调用
+
+### 5.1 方式一：CommandLineRunner（快速验证）
+
+直接在启动类里写代码，适合验证 "从你的机器到模型 API" 这条链路是否通畅：
+
+```java
+package cn.refinex.quickstart;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+/**
+ * Spring AI QuickStart 启动类
+ *
+ * @author refinex
+ */
+@SpringBootApplication
+public class SpringAiQuickStartApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringAiQuickStartApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner testChat(ChatClient.Builder builder) {
+        return args -> {
+            // 1. 用 Builder 构建 ChatClient 实例
+            ChatClient chatClient = builder.build();
+
+            // 2. 发起同步调用
+            String prompt = "用一句话介绍一下你自己，包含 'Spring AI' 这个词。";
+            System.out.println(">>> 正在提问...");
+            String response = chatClient.prompt(prompt).call().content();
+
+            // 3. 输出结果
+            System.out.println(">>> AI 回复: " + response);
+        };
+    }
+}
+```
+
+启动后，控制台输出类似：
+
+```
+>>> 正在提问...
+>>> AI 回复: 我是一个基于 GPT 的编程助手，擅长在代码库中快速定位问题并实现修复/优化，
+也能结合 Spring AI 提供落地的工程化建议。
+```
+
+看到回复就说明链路已经打通。
+
+**这段代码背后发生了什么？**
+
+1. Spring Boot 启动时，`spring-ai-starter-model-openai` 的自动配置读取 `spring.ai.openai.*` 配置，创建底层 HTTP 客户端并注册 `ChatClient.Builder` Bean。
+2. 你注入 `ChatClient.Builder` 并调用 `.build()` 得到 `ChatClient` 实例。
+3. `.prompt("...")` 构建一个包含 User Message 的 Prompt 对象。
+4. `.call()` 通过 HTTP 把请求发送到 OpenAI（或你配置的 base-url 对应的服务），等待模型返回。
+5. `.content()` 从响应中提取模型生成的文本内容。
+
+整个过程中，Spring AI 帮你处理了：HTTP 请求构建、认证头注入、请求/响应序列化、错误处理等。
+
+### 5.2 方式二：RestController（更接近实战）
+
+在实际开发中，我们通常会写一个接口给前端调用：
+
+```java
+package cn.refinex.quickstart.controller;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 聊天控制器
+ *
+ * @author refinex
+ */
+@RestController
+@RequestMapping("/ai")
+public class ChatController {
+
+    private final ChatClient chatClient;
+
+    // 构造器注入 Builder 并构建 Client
+    public ChatController(ChatClient.Builder builder) {
+        this.chatClient = builder.build();
+    }
+
+    @GetMapping("/chat")
+    public String chat(@RequestParam String msg) {
+        return chatClient.prompt(msg).call().content();
+    }
+}
+```
+
+启动项目后，浏览器访问：
+
+```
+http://localhost:8080/ai/chat?msg=讲个笑话
+```
+
+就能看到 AI 的回复了：
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/z8ndhd.png)
+
+<Callout type="tip" title="工程提示">
+    这里用 `@GetMapping` 纯粹是为了方便在浏览器里直接测试。生产环境建议改成 **`@PostMapping`** + `@RequestBody`，原因有两个：
+    1. GET 请求的 URL 有长度限制（通常 2~8 KB），长 prompt 会被截断。
+    2. prompt 内容可能包含敏感信息，放在 URL 里会被浏览器历史、Nginx 日志等记录下来。
+</Callout>
+
+### 5.3 方式三：流式输出（真实聊天场景）
+
+上面两个例子都是**同步调用**——`.call()` 会一直阻塞，直到模型把整个回答生成完毕才返回。对于短回答还好，但如果回答很长（几百上千字），用户要等很久才能看到第一个字。
+
+真实的聊天 UI 几乎都用**流式输出**——模型每生成一个 token 片段就立即推送给前端，用户看到的是 "逐字蹦出来" 的效果。
+
+Spring AI 用 `.stream()` 替换 `.call()` 就能实现：
+
+```java
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import reactor.core.publisher.Flux;
+
+@PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+public Flux<String> chatStream(@RequestBody String msg) {
+    return chatClient.prompt(msg).stream().content();
+}
+```
+
+**关键区别**：
+
+- `.call().content()` 返回 `String`——同步，等全部生成完。
+- `.stream().content()` 返回 `Flux<String>`——异步流，token 片段逐个推送。
+
+<Callout type="tip" title="">
+    用 `Flux` 需要确保你的项目引入了 `spring-boot-starter-webflux`（或者在 Spring Boot 3.5.x 中，`spring-boot-starter-web` 已经包含了 Reactor 依赖，可以直接用）。前端可以通过 **SSE（Server-Sent Events）** 或 **WebSocket** 来消费这个流。
+（注意：这里比较容易踩坑，具体见 "Spring AI 流式对话" ）
+</Callout>
+
+## 6. 常见问题排查（Troubleshooting）
+
+如果你启动报错或调用失败，大概率是以下原因：
+
+### 6.1 `401 Unauthorized`
+
+**原因**：API Key 没配对、已过期、或者账户余额不足。
+
+**排查**：
+
+- 确认环境变量 `OPENAI_API_KEY` 已正确设置（可以在启动日志里打印确认）。
+- 登录提供商的控制台检查 Key 状态和余额。
+
+### 6.2 `Connect Timeout` / `Connection Refused`
+
+**原因**：国内开发者最常遇到的问题。OpenAI 的官方 API（`api.openai.com`）在国内网络环境下通常无法直连。
+
+**解决方案**（任选其一）：
+
+- 使用支持 OpenAI 协议的**国内大模型**（如 DeepSeek），在 yml 中配置 `spring.ai.openai.base-url: https://api.deepseek.com`。
+- 购买国内的 API **中转/代理服务**，同样通过 `base-url` 配置。
+- 配置本地网络代理（需要在 JVM 参数或 HTTP 客户端层面配置）。
+
+### 6.3 模型名错误
+
+**现象**：返回 `404` 或 `model_not_found` 错误。
+
+**原因**：`spring.ai.openai.chat.options.model` 配置的模型名和提供商实际支持的名称不一致。
+
+**排查**：检查你的提供商文档，确认支持的模型名列表。例如 DeepSeek 的模型名是 `deepseek-chat`，不是 `gpt-4o`。
+
+### 6.4 `BeanDefinitionOverrideException`
+
+**原因**：通常是版本冲突。Spring Boot 和 Spring AI 的版本不匹配，导致自动配置的 Bean 定义冲突。
+
+**排查**：检查父 POM 的 `spring-boot-starter-parent` 版本和 `spring-ai.version` 是否在官方兼容范围内。
+
+### 6.5 响应特别慢（> 30 秒）
+
+**原因不一定是 bug**：大模型生成长回答本身就需要时间（尤其是推理能力强的模型如 o1 系列）。但如果简单问题也很慢，可能是：
+
+- 网络延迟（中转服务质量问题）。
+- 模型负载高（提供商限流或排队）。
+- 没有配置合理的 `timeout`（默认超时可能很长）。
+
+## 7. 总结
+
+到这里，你已经用三种方式跑通了 Spring AI 的第一次调用：
+
+- **CommandLineRunner**：验证链路连通性。
+- **RestController**：模拟真实接口调用。
+- **流式输出**：真实聊天场景的基础。
+
+这个 Demo 虽然简单，但它展示了 Spring AI 的核心价值：**你不需要手写 HTTP 请求，不需要解析 JSON，不需要处理认证逻辑**——注入 `ChatClient`，用流畅 API 写一行调用，剩下的交给框架。
+
+下一篇我们会深入 Spring AI 的一些核心 API，帮助你快速掌握 **AI Model API、Vector Store API、Tool Calling API 这些核心 API。**
