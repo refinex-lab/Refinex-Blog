@@ -10,6 +10,9 @@ import {
   getDocHref,
   inferTitleFromMarkdown,
   normalizeContentFilePath,
+  orderFromPath,
+  parseOrderPrefix,
+  stripOrderPrefixFromPath,
   toNumberOrInfinity,
 } from "./utils";
 
@@ -34,38 +37,9 @@ const mdxModules = import.meta.glob("../../content/**/*.mdx", {
   import: "default",
 }) as Record<string, () => Promise<unknown>>;
 
-const orderModules = import.meta.glob("../../content/**/_order.json", {
-  import: "default",
-  eager: true,
-}) as Record<string, { order?: unknown }>;
-
-const folderOrderById = new Map<string, string[]>();
-
-for (const [modulePath, config] of Object.entries(orderModules)) {
-  const sourcePath = normalizeContentFilePath(modulePath);
-  const folderId =
-    sourcePath === "_order.json"
-      ? ""
-      : sourcePath.replace(/\/_order\.json$/i, "");
-
-  if (!config || !Array.isArray(config.order)) continue;
-  const order = config.order.filter(
-    (item): item is string => typeof item === "string" && item.trim().length > 0
-  );
-  if (order.length === 0) continue;
-  folderOrderById.set(folderId, order);
-}
-
 const parseFrontmatter = (
   raw: unknown
 ): { data: Record<string, unknown>; body: string } => {
-  // Minimal frontmatter parser to avoid Node-only Buffer/polyfills in the browser.
-  // Supports:
-  // ---
-  // title: xxx
-  // order: 1
-  // description: yyy
-  // ---
   if (typeof raw !== "string") {
     return { data: {}, body: "" };
   }
@@ -113,9 +87,6 @@ const parseFrontmatter = (
     data[key] = value;
   }
 
-  // If we started parsing frontmatter but never found the closing delimiter,
-  // treat the whole document as markdown (common when a file starts with `---`
-  // as a horizontal rule).
   if (!foundEnd) {
     return { data: {}, body: raw };
   }
@@ -154,7 +125,10 @@ const pickFirstText = (
 
 const parseMdDoc = (modulePath: string, raw: string): ContentDoc => {
   const sourcePath = normalizeContentFilePath(modulePath);
-  const slug = sourcePath.replace(/\.md$/i, "");
+  // Strip XX_ prefixes from the slug so URLs and display names are clean.
+  const slug = stripOrderPrefixFromPath(sourcePath.replace(/\.md$/i, ""));
+  // Derive order from the file name prefix (e.g. "01_快速开始.md" → 1).
+  const order = orderFromPath(sourcePath.replace(/\.md$/i, ""));
   const parsed = parseFrontmatter(raw);
 
   const titleFromMatter =
@@ -175,7 +149,9 @@ const parseMdDoc = (modulePath: string, raw: string): ContentDoc => {
   const createdAt = pickFirstText(parsed.data, ["createdAt", "created"]);
   const updatedAt = pickFirstText(parsed.data, ["updatedAt", "updated"]);
 
-  const order = toNumberOrInfinity(parsed.data.order);
+  // Frontmatter order can still override the prefix-based order.
+  const fmOrder = toNumberOrInfinity(parsed.data.order);
+  const finalOrder = Number.isFinite(fmOrder) ? fmOrder : order;
 
   return {
     slug,
@@ -185,7 +161,7 @@ const parseMdDoc = (modulePath: string, raw: string): ContentDoc => {
     author,
     createdAt,
     updatedAt,
-    order,
+    order: finalOrder,
     sourcePath,
     raw,
     body: parsed.body.trim(),
@@ -199,7 +175,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 
 const parseMdxDoc = (modulePath: string): ContentDoc => {
   const sourcePath = normalizeContentFilePath(modulePath);
-  const slug = sourcePath.replace(/\.mdx$/i, "");
+  const slug = stripOrderPrefixFromPath(sourcePath.replace(/\.mdx$/i, ""));
+  const order = orderFromPath(sourcePath.replace(/\.mdx$/i, ""));
 
   const meta = mdxMetaModules[modulePath];
   const data = isRecord(meta) ? meta : {};
@@ -238,7 +215,8 @@ const parseMdxDoc = (modulePath: string): ContentDoc => {
     pickFirstText(data, ["updatedAt", "updated"]) ??
     pickFirstText(parsed.data, ["updatedAt", "updated"]);
 
-  const order = toNumberOrInfinity(data.order ?? parsed.data.order);
+  const fmOrder = toNumberOrInfinity(data.order ?? parsed.data.order);
+  const finalOrder = Number.isFinite(fmOrder) ? fmOrder : order;
 
   return {
     slug,
@@ -248,7 +226,7 @@ const parseMdxDoc = (modulePath: string): ContentDoc => {
     author,
     createdAt,
     updatedAt,
-    order,
+    order: finalOrder,
     sourcePath,
     raw,
     body: parsed.body.trim(),
@@ -271,16 +249,16 @@ export const mdxDocComponentLoaderBySlug = new Map<
 >(
   Object.entries(mdxModules).map(([modulePath, loader]) => {
     const sourcePath = normalizeContentFilePath(modulePath);
-    const slug = sourcePath.replace(/\.mdx$/i, "");
+    const slug = stripOrderPrefixFromPath(sourcePath.replace(/\.mdx$/i, ""));
     return [slug, loader];
   })
 );
 
-const createFolder = (id: string, title: string): DocsNavFolder => ({
+const createFolder = (id: string, title: string, order: number): DocsNavFolder => ({
   type: "folder",
   id,
   title,
-  order: Number.POSITIVE_INFINITY,
+  order,
   children: [],
 });
 
@@ -288,13 +266,14 @@ const ensureFolder = (
   folderMap: Map<string, DocsNavFolder>,
   parent: DocsNavFolder,
   id: string,
-  title: string
+  title: string,
+  order: number
 ) => {
   const existing = folderMap.get(id);
   if (existing) {
     return existing;
   }
-  const folder = createFolder(id, title);
+  const folder = createFolder(id, title, order);
   folderMap.set(id, folder);
   parent.children.push(folder);
   return folder;
@@ -303,16 +282,17 @@ const ensureFolder = (
 const insertLeaf = (
   folderMap: Map<string, DocsNavFolder>,
   root: DocsNavFolder,
-  navPath: string,
+  rawNavPath: string,
   leaf: DocsNavItem
 ) => {
-  const segments = navPath.split("/").filter(Boolean);
+  const segments = rawNavPath.split("/").filter(Boolean);
   let parent = root;
   let parentId = root.id;
 
   for (const seg of segments) {
-    const nextId = parentId ? `${parentId}/${seg}` : seg;
-    parent = ensureFolder(folderMap, parent, nextId, seg);
+    const { order, name } = parseOrderPrefix(seg);
+    const nextId = parentId ? `${parentId}/${name}` : name;
+    parent = ensureFolder(folderMap, parent, nextId, name, order);
     parentId = nextId;
   }
 
@@ -320,7 +300,7 @@ const insertLeaf = (
 };
 
 const buildDocsNavTree = (): DocsNavFolder => {
-  const root = createFolder("", "root");
+  const root = createFolder("", "root", Number.POSITIVE_INFINITY);
   const folderMap = new Map<string, DocsNavFolder>([[root.id, root]]);
 
   // Insert custom pages (non-Markdown).
@@ -337,24 +317,30 @@ const buildDocsNavTree = (): DocsNavFolder => {
   }
 
   // Insert Markdown docs based on file-system structure.
+  // We use the raw sourcePath (with XX_ prefixes) for folder ordering,
+  // but the clean slug (without prefixes) for display and URLs.
   for (const doc of contentDocs) {
-    const segments = doc.slug.split("/").filter(Boolean);
-    const leafTitle = doc.title;
-    const navPath = segments.slice(0, -1).join("/");
+    // Reconstruct the raw folder path from sourcePath (still has prefixes).
+    const rawSegments = doc.sourcePath
+      .replace(/\.(md|mdx)$/i, "")
+      .split("/")
+      .filter(Boolean);
+    const rawNavPath = rawSegments.slice(0, -1).join("/");
+
     const leaf: DocsNavItem = {
       type: "doc",
       id: doc.slug,
       slug: doc.slug,
-      title: leafTitle,
+      title: doc.title,
       description: doc.description,
       order: doc.order,
       href: getDocHref(doc.slug),
     };
 
-    insertLeaf(folderMap, root, navPath, leaf);
+    insertLeaf(folderMap, root, rawNavPath, leaf);
   }
 
-  finalizeFolderOrders(root, folderOrderById);
+  finalizeFolderOrders(root);
   return root;
 };
 

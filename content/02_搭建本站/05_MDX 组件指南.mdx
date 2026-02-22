@@ -1,0 +1,312 @@
+---
+title: MDX 组件指南
+description: 在文档中使用 React 组件，实现交互式内容、多语言对照、步骤引导等高级表达。
+author: Refinex
+createdAt: 2026-02-22
+updatedAt: 2026-02-22
+---
+
+# MDX 组件指南
+
+MDX 是 Markdown 的超集，允许在文档中直接使用 React 组件。当你需要 Tabs 切换、步骤引导、提示框等交互能力时，将文件扩展名改为 `.mdx` 即可。
+
+<Callout type="info" title="无需手动导入">
+  本站已将所有内置组件注册到全局，在 `.mdx` 文件中可以直接使用，无需 `import` 语句。
+</Callout>
+
+## Callout 提示框
+
+用于突出重要信息。支持 6 种类型：`info`、`note`、`tip`、`success`、`warning`、`danger`。
+
+```mdx
+<Callout type="tip" title="推荐做法">
+  将复杂的配置拆分为多个小文件，便于维护和复用。
+</Callout>
+```
+
+<Callout type="tip" title="推荐做法">
+  将复杂的配置拆分为多个小文件，便于维护和复用。
+</Callout>
+
+<Callout type="warning" title="注意">
+  修改 `vite.config.ts` 后需要重启开发服务器才能生效。
+</Callout>
+
+<Callout type="danger" title="危险操作">
+  `rm -rf` 命令不可撤销，请务必确认目标路径。
+</Callout>
+
+## Tabs 标签页
+
+适合展示多语言代码对照、多方案对比等场景。
+
+````mdx
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```bash
+    yarn
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm install
+    ```
+  </Tab>
+</Tabs>
+````
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```bash
+    yarn
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm install
+    ```
+  </Tab>
+</Tabs>
+
+多语言代码对照：
+
+<Tabs>
+  <Tab title="Java">
+    ```java
+    public class Hello {
+        public static void main(String[] args) {
+            System.out.println("Hello, World");
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="Kotlin">
+    ```kotlin
+    fun main() {
+        println("Hello, World")
+    }
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript
+    console.log("Hello, World");
+    ```
+  </Tab>
+</Tabs>
+
+## Steps 步骤引导
+
+适合安装教程、操作流程等需要按顺序执行的内容。
+
+```mdx
+<Steps>
+  <Step title="安装依赖">
+    <Terminal>{`npm install`}</Terminal>
+  </Step>
+  <Step title="启动开发服务器">
+    <Terminal>{`npm run dev`}</Terminal>
+  </Step>
+  <Step title="打开浏览器">
+    访问终端输出的地址，通常是 `http://localhost:5173`。
+  </Step>
+</Steps>
+```
+
+<Steps>
+  <Step title="安装依赖">
+    <Terminal>{`npm install`}</Terminal>
+  </Step>
+  <Step title="启动开发服务器">
+    <Terminal>{`npm run dev`}</Terminal>
+  </Step>
+  <Step title="打开浏览器">
+    访问终端输出的地址，通常是 `http://localhost:5173`。
+  </Step>
+</Steps>
+
+## Terminal 终端块
+
+展示命令行操作，自带复制按钮和终端风格样式。
+
+```mdx
+<Terminal title="bash">
+{`git clone https://github.com/refinex-lab/Refinex-Blog.git
+cd Refinex-Blog
+npm install && npm run dev`}
+</Terminal>
+```
+
+<Terminal title="bash">
+{`git clone https://github.com/refinex-lab/Refinex-Blog.git
+cd Refinex-Blog
+npm install && npm run dev`}
+</Terminal>
+
+## FileTree 目录树
+
+可视化展示项目结构，自带复制按钮。目录以 `/` 结尾，文件不带。缩进使用两个空格表示层级。
+
+```mdx
+<FileTree title="项目结构">
+{`src/
+  config/
+    site.ts
+    profile.ts
+  docs/
+    contentIndex.ts
+    MarkdownRenderer.tsx
+    MDXRenderer.tsx
+  pages/
+    home/
+    docs/
+    tools/`}
+</FileTree>
+```
+
+<FileTree title="项目结构">
+{`src/
+  config/
+    site.ts
+    profile.ts
+  docs/
+    contentIndex.ts
+    MarkdownRenderer.tsx
+    MDXRenderer.tsx
+  pages/
+    home/
+    docs/
+    tools/`}
+</FileTree>
+
+## Expandable 折叠区域
+将补充说明、可选阅读等内容折叠起来，减少页面干扰。
+
+```mdx
+<Expandable title="为什么选择 Vite 而不是 Webpack？">
+  Vite 基于原生 ES Module，开发环境启动速度极快，且内置了对 TypeScript、JSX、CSS Modules 的支持，
+  配置更简洁。对于文档型站点来说，Vite 是更合适的选择。
+</Expandable>
+```
+
+<Expandable title="为什么选择 Vite 而不是 Webpack？">
+  Vite 基于原生 ES Module，开发环境启动速度极快，且内置了对 TypeScript、JSX、CSS Modules 的支持，
+  配置更简洁。对于文档型站点来说，Vite 是更合适的选择。
+</Expandable>
+
+## KeyPoint 关键要点
+
+比 Callout 更轻量，适合在文章末尾总结核心观点。
+
+```mdx
+<KeyPoint title="核心原则">
+  文件名的数字前缀决定排序，Frontmatter 的 title 决定显示标题，两者各司其职。
+</KeyPoint>
+```
+
+<KeyPoint title="核心原则">
+  文件名的数字前缀决定排序，Frontmatter 的 title 决定显示标题，两者各司其职。
+</KeyPoint>
+
+## QuoteCard 引用卡片
+
+用于引用名言、文档出处等。
+
+```mdx
+<QuoteCard author="Linus Torvalds" source="Talk is cheap">
+  Talk is cheap. Show me the code.
+</QuoteCard>
+```
+
+<QuoteCard author="Linus Torvalds" source="Talk is cheap">
+  Talk is cheap. Show me the code.
+</QuoteCard>
+
+## Definition 术语定义
+
+为专业术语提供清晰的解释。
+
+```mdx
+<Definition term="SPA（Single Page Application）">
+  单页应用，页面在浏览器端通过 JavaScript 动态渲染，路由切换不会触发整页刷新。
+</Definition>
+```
+
+<Definition term="SPA（Single Page Application）">
+  单页应用，页面在浏览器端通过 JavaScript 动态渲染，路由切换不会触发整页刷新。
+</Definition>
+
+## Kbd 键盘快捷键
+
+在文档中展示快捷键组合。
+
+```mdx
+使用 <Kbd>⌘</Kbd> + <Kbd>K</Kbd> 打开搜索框。
+```
+
+使用 <Kbd>⌘</Kbd> + <Kbd>K</Kbd> 打开搜索框。
+
+## Checklist 检查清单
+
+适合上线前检查、功能清单等场景。
+
+```mdx
+<Checklist title="部署前检查">
+  <CheckItem checked>生产构建无报错</CheckItem>
+  <CheckItem checked>搜索功能正常</CheckItem>
+  <CheckItem checked>亮暗主题切换正常</CheckItem>
+  <CheckItem>配置自定义域名</CheckItem>
+</Checklist>
+```
+
+<Checklist title="部署前检查">
+  <CheckItem checked>生产构建无报错</CheckItem>
+  <CheckItem checked>搜索功能正常</CheckItem>
+  <CheckItem checked>亮暗主题切换正常</CheckItem>
+  <CheckItem>配置自定义域名</CheckItem>
+</Checklist>
+
+## Badge 标记
+
+用于标注状态、版本等信息。
+
+```mdx
+<Badge type="info" /> <Badge type="beta" />
+```
+
+<Badge type="info" /> <Badge type="beta" />
+
+## Counter 交互演示
+
+一个简单的计数器组件，展示 MDX 的交互能力。
+
+```mdx
+<Counter initial={0} />
+```
+
+<Counter initial={0} />
+
+## 组件组合使用
+
+这些组件可以自由嵌套组合。例如在 Steps 中使用 Terminal，在 Callout 中使用行内代码：
+
+<Steps>
+  <Step title="创建 MDX 文件">
+    将文件扩展名设为 `.mdx`，例如 `05_MDX 组件指南.mdx`。
+  </Step>
+  <Step title="使用组件">
+    直接在文档中编写组件标签，无需导入。
+  </Step>
+  <Step title="预览效果">
+    保存文件后开发服务器会自动刷新，即可看到渲染结果。
+  </Step>
+</Steps>
