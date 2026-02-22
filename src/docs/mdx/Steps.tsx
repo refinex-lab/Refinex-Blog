@@ -29,7 +29,7 @@ export const Steps = ({ children }: { children: ReactNode }) => {
               {idx + 1}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="m-0 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              <p className="m-0 flex h-7 items-center text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                 {step.props.title}
               </p>
               <div className="mt-2 text-sm leading-7 text-zinc-700 dark:text-zinc-200">
