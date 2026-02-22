@@ -15,6 +15,7 @@ import { Kbd } from "./mdx/Kbd";
 import { KeyPoint } from "./mdx/KeyPoint";
 import { QuoteCard } from "./mdx/QuoteCard";
 import { Checklist, CheckItem } from "./mdx/Checklist";
+import { LinkCard } from "./mdx/LinkCard";
 
 export const mdxComponents: MDXComponents = {
   pre: ({ children }) => <>{children}</>,
@@ -69,4 +70,5 @@ export const mdxComponents: MDXComponents = {
   QuoteCard,
   Checklist,
   CheckItem,
+  LinkCard,
 };

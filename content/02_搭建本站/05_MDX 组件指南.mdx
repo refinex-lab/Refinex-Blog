@@ -295,6 +295,44 @@ npm install && npm run dev`}
 
 <Counter initial={0} />
 
+## LinkCard 链接卡片
+
+为外部链接生成富预览卡片，类似 Notion / Slack 的链接展开效果。支持手动传入属性，也可以仅传 `href` 自动抓取目标页面的 Open Graph 元数据（受 CORS 限制，建议优先使用手动属性）。
+
+手动指定所有属性（推荐）：
+
+```mdx
+<LinkCard
+  href="https://react.dev"
+  title="React"
+  description="用于构建用户界面的 JavaScript 库"
+  image="https://react.dev/images/og-home.png"
+/>
+```
+
+<LinkCard
+  href="https://react.dev"
+  title="React"
+  description="用于构建用户界面的 JavaScript 库"
+  image="https://react.dev/images/og-home.png"
+/>
+
+仅传 URL，自动获取元数据：
+
+```mdx
+<LinkCard href="https://vitejs.dev" />
+```
+
+<LinkCard href="https://vitejs.dev" />
+
+| 属性 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `href` | `string` | 是 | 目标链接地址 |
+| `title` | `string` | 否 | 标题，缺省时自动获取 og:title |
+| `description` | `string` | 否 | 描述，缺省时自动获取 og:description |
+| `image` | `string` | 否 | 预览图，缺省时自动获取 og:image |
+| `icon` | `string` | 否 | 网站图标，默认使用 Google Favicon 服务 |
+
 ## 组件组合使用
 
 这些组件可以自由嵌套组合。例如在 Steps 中使用 Terminal，在 Callout 中使用行内代码：
