@@ -19,7 +19,7 @@ const buildSearchDocs = (): SearchDoc[] => {
     title: page.title,
     href: getDocHref(page.slug),
     description: page.description,
-    section: page.category,
+    section: undefined,
     text: page.description ?? "",
   }));
 
@@ -35,21 +35,23 @@ const buildSearchDocs = (): SearchDoc[] => {
   return [...custom, ...markdown];
 };
 
-const searchDocs = buildSearchDocs();
-const searchDocById = new Map<string, SearchDoc>(
-  searchDocs.map((doc) => [doc.id, doc])
-);
+let _searchDocs: SearchDoc[] | null = null;
+let _searchDocById: Map<string, SearchDoc> | null = null;
+let _index: Index | null = null;
 
-// Chinese-friendly: use CJK encoder + full tokenizer for substring matches.
-const index = new Index({
-  encoder: "CJK",
-  tokenize: "full",
-  resolution: 9,
-  cache: 100,
-});
-
-for (const doc of searchDocs) {
-  index.add(doc.id, `${doc.title}\n${doc.description ?? ""}\n${doc.text}`);
+function ensureIndex() {
+  if (_searchDocs) return;
+  _searchDocs = buildSearchDocs();
+  _searchDocById = new Map(_searchDocs.map((doc) => [doc.id, doc]));
+  _index = new Index({
+    encoder: "CJK",
+    tokenize: "full",
+    resolution: 9,
+    cache: 100,
+  });
+  for (const doc of _searchDocs) {
+    _index.add(doc.id, `${doc.title}\n${doc.description ?? ""}\n${doc.text}`);
+  }
 }
 
 const makeSnippet = (text: string, query: string) => {
@@ -74,12 +76,14 @@ export const searchDocsByQuery = (query: string, limit = 20): SearchHit[] => {
   const q = query.trim();
   if (!q) return [];
 
-  const ids = index.search(q, { limit }) as Array<string | number>;
+  ensureIndex();
+
+  const ids = _index!.search(q, { limit }) as Array<string | number>;
 
   return ids
     .map((id) => String(id))
     .flatMap((id) => {
-      const doc = searchDocById.get(id);
+      const doc = _searchDocById!.get(id);
       if (!doc) return [];
 
       const hit: SearchHit = {

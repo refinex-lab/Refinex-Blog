@@ -77,9 +77,11 @@ export const DocsPage = () => {
     </div>
   );
 
+  const hideToc = customPage?.fullWidth === true;
+
   return (
     <div className="w-full">
-      <div className="grid min-h-[calc(100vh-72px)] grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_248px]">
+      <div className={`grid min-h-[calc(100vh-72px)] grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] ${hideToc ? "" : "xl:grid-cols-[280px_minmax(0,1fr)_248px]"}`}>
         <aside className="sticky top-[72px] hidden h-[calc(100vh-72px)] border-r border-black/5 bg-white/55 backdrop-blur dark:border-white/10 dark:bg-black/20 md:block">
           <DocsSidebar tree={docsNavTree} />
         </aside>
@@ -88,9 +90,11 @@ export const DocsPage = () => {
           {content}
         </div>
 
-        <aside className="sticky top-[72px] hidden h-[calc(100vh-72px)] bg-white/40 backdrop-blur dark:bg-black/10 xl:block">
-          <DocsToc contentRef={contentRef} docKey={docKey} />
-        </aside>
+        {!hideToc && (
+          <aside className="sticky top-[72px] hidden h-[calc(100vh-72px)] bg-white/40 backdrop-blur dark:bg-black/10 xl:block">
+            <DocsToc contentRef={contentRef} docKey={docKey} />
+          </aside>
+        )}
       </div>
     </div>
   );

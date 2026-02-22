@@ -317,7 +317,7 @@ const buildDocsNavTree = (): DocsNavFolder => {
       order: page.order,
       href: `${getDocHref(page.slug)}`,
     };
-    insertLeaf(folderMap, root, page.category, leaf);
+    root.children.push(leaf);
   }
 
   // Insert Markdown docs based on file-system structure.
