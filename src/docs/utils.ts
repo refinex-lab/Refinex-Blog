@@ -111,17 +111,11 @@ export const sortDocsNavChildren = (children: DocsNavNode[]) => {
   });
 };
 
-export const finalizeFolderOrders = (folder: DocsNavFolder): number => {
-  let minOrder = Number.POSITIVE_INFINITY;
+export const finalizeFolderOrders = (folder: DocsNavFolder): void => {
   for (const child of folder.children) {
     if (child.type === "folder") {
-      const childOrder = finalizeFolderOrders(child);
-      minOrder = Math.min(minOrder, childOrder);
-      continue;
+      finalizeFolderOrders(child);
     }
-    minOrder = Math.min(minOrder, child.order);
   }
-  folder.order = minOrder;
   sortDocsNavChildren(folder.children);
-  return minOrder;
 };

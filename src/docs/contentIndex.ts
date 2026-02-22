@@ -271,6 +271,10 @@ const ensureFolder = (
 ) => {
   const existing = folderMap.get(id);
   if (existing) {
+    // Keep the smallest (most explicit) order seen for this folder.
+    if (order < existing.order) {
+      existing.order = order;
+    }
     return existing;
   }
   const folder = createFolder(id, title, order);
