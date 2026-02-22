@@ -15,15 +15,191 @@ updatedAt: 2026-02-22
 
 Spring AI 的定位就是：**它不是大模型，而是一个面向 Java 的 AI 工程框架**，用 Spring 生态一贯的方式（可移植抽象、模块化、自动配置、POJO 友好）把上面这套事情做成 “可落地的工程骨架”。
 
-## 1. Spring AI 是什么（以及它不是什么）
+## 1. Spring AI 是什么
 
-Spring AI 官方地址：
-
-<LinkCard href="https://spring.io/projects/spring-ai" />
+<LinkCard 
+    href="https://spring.io/projects/spring-ai"
+    title="Spring AI"
+/>
 
 ### 1.1 Spring AI 是什么
 
-Spring AI 提供一套相对统一的抽象 API，帮你在 Spring 应用中接入不同 AI 提供商的能力，并把常见的 AI 工程链路（RAG、向量库、工具调用、观测与评估）用更 “Spring” 的方式组织起来。
+Spring AI 提供一套相对统一的抽象 API，帮你在 Spring 应用中接入不同 AI 提供商的能力，并把常见的 AI 工程链路（RAG、向量库、工具调用、观测与评估）用更 “Spring” 的方式组织起来，后面都会陆续给你展示各种弄弄的 Spring 味道。
 
 官方项目页的核心描述是：把企业 **数据与 API** 连接到 **AI Models** 上。
 
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/45d3l3.png)
+
+可以看到，目标还是很明确的。它不负责训练模型和微调等，因为没必要，同时这方面确实也干不过 Python 生态。
+
+### 1.2 Spring AI 不是什么
+
+- **它不是模型**：你仍然需要选择并付费使用某个模型提供商（或自建/本地模型，如 Ollama）。
+- **它也不是 “换模型零成本” 的魔法**：它能把**通用能力**抽象得比较一致，但**供应商特性**依然存在，你在需要时仍要自己下钻比如看看官方文档或者源码。
+
+<Callout type="tip" title="一个比较现实的判断方式：">
+  如果你做 “标准聊天 + embedding + 向量检索” 的链路，Spring AI 的可移植性收益很大。但是，如果你要用某家模型的独有特性（特殊结构化输出、特定工具调用协议、特定推理参数），你就得接受一定不可移植性，毕竟大一统是件困难的事情，各家模型都是竞争关系，难免有一些自己的特性。
+</Callout>
+
+## 2. Spring AI 解决的核心问题：把企业数据与 API 接到模型上
+
+很多 “看起来能用” 的 Demo 停留在：`prompt（输入提示词） -> LLM（大语言模型） -> response（输出）`。
+
+但生产里的问题是：模型并不知道你的业务事实，也不能凭空访问你的系统（通过一些 MCP 或者 Tools Calling 是可以实现的，现在你先知道这个概念即可，后面会展开）。于是你需要把它 “接进来”：
+
+- **接企业数据**：把文档、FAQ、工单、Wiki 等做成可检索的知识库，让模型回答时能引用相关片段（RAG）。
+- **接业务 API**：让模型在需要时调用你提供的函数或工具（例如查订单、查库存、创建工单），再把结果组织成自然语言返回（Tools Calling/Function Calling） 。
+- **可观测与可评估**：你要知道模型调用耗时、错误率、token 成本、回答质量是否退化，以及如何减少幻觉。
+
+## 3. Spring AI 的主要能力
+
+### 3.1 模型访问层：跨提供商的可移植 API
+
+Spring AI 支持跨 AI 提供商的可移植 API（**同步与流式**），并允许访问一定的模型特性（model-specific features）。
+
+支持的模型类型包括：
+
+- Chat Completion（聊天补全）
+- Embedding（向量嵌入）
+- Text-to-Image（文生图）
+- Audio Transcription（音频转录）
+- Text-to-Speech（文本转语音）
+- Moderation （内容审核）等
+
+这里的关键点不是 “支持很多家”，而是：**你把业务代码尽量写在 Spring AI 的抽象上**，把供应商差异压到配置与少量适配层里。
+
+来看看 Spring 官方根据输入和输出类型整理的分类图：
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/sbpzon.png)
+
+### 3.2 数据层：Vector Store 与元数据过滤
+
+Spring AI 支持多种**向量存储/向量数据**库提供商，并提供跨 Vector Store 的可移植 API，以及**类似 SQL 的元数据过滤器**能力。
+
+一个可能的工程落地案例思路如下：
+
+- 文档切分（chunking）
+- 生成 embedding（批量更省成本）
+- 写入向量库（同时写入元数据：文档来源、时间、权限、租户等）
+- 查询时用 “向量相似度 + 元数据过滤” 缩小候选集，其实就类似我们 SQL 检索的 WHERE 过滤
+- 把检索到的片段注入 prompt，让模型 “有证据地回答”
+
+### 3.3 推理编排层：RAG、对话记忆、Advisors
+
+Spring AI 支持**对话记忆（让大模型记住你的对话历史，避免 “失忆”）与 RAG（检索增强技术）**。
+
+此外还有 Advisors API，用来**封装重复的生成式 AI 模式，在发送到模型和从模型返回的数据上做变换**，从而提高可复用性与可移植性。这个设计很像我们熟悉的 Interceptor 和 AOP 的能力，后面也会详细展示，现在你知道就行了。
+
+你可以把 Advisors 理解成：把 prompt 模板、上下文拼装、检索注入、格式化输出、重试策略等从业务代码里抽出来的那一层。
+
+### 3.4 与外界交互：Tools/Function Calling
+
+**工具/函数调用**允许模型在需要时请求执行客户端工具和函数，从而获取实时信息。
+
+一个典型模式是：
+
+1. 模型读到用户问题
+2. 模型触发工具调用（例如查订单、查库存）
+3. 你的应用执行这些函数，返回结构化结果（注意，是我们自己的应用执行，而不是模型执行也不是 Spring AI 执行）
+4. 模型基于真实数据组织回答
+
+<Callout type="warning" title="边界提醒">
+  工具调用这块通常是供应商差异较大的区域之一。正确姿势是先用好抽象覆盖的通用部分，复杂编排再逐步下钻。
+</Callout>
+
+### 3.5 运维与质量：Observability 与 Evaluation
+
+Spring AI 提供**可观测性（Observability）与评估（Evaluation）工具**。
+
+实践里我们需要关注三件事：
+
+- **日志与链路追踪要脱敏**：prompt 里常常混有用户隐私、内部数据、key 片段。
+- **采样策略**：不要全量记录 prompt/response，否则成本与风险都很高。
+- **可回放**：线上问题往往是 “某个输入组合触发了坏回答”，你需要能复现当时的上下文与模型参数。
+
+## 4. 最小可运行 Quickstart：Spring Boot + ChatClient
+
+下面示例复用官方项目页的思路，你简单看一下即可，后面我们会有专门的 Quick Start 进行指引。
+
+对应 Github 地址：
+
+<LinkCard href="https://github.com/refinex-lab/Refinex-SpringAI-Examples/tree/master/spring-ai-quickstart" />
+
+### 4.1 运行环境
+
+- Java：建议 17+（如果团队已在用 21，就直接 21）
+- Spring Boot：Spring AI 1.1.2 官方 [Getting Started](https://docs.spring.io/spring-ai/reference/getting-started.html) 推荐 Spring Boot 3.4.x and 3.5.x**
+- Spring AI：目前最新的是 [1.1.2](https://spring.io/projects/spring-ai#learn)，我们后续均以此为例 ⬇️
+
+![](http://refienx-notes.oss-cn-shanghai.aliyuncs.com/blog/mrexn4.png)
+
+### 4.2 依赖与配置（以 OpenAI 为例）
+
+1）创建 Spring Boot 项目，并添加 Spring AI OpenAI starter（可用 [start.spring.io](http://start.spring.io) 快速创建）。
+
+2）配置 API key（`application.yml`）：
+
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+```
+
+<Callout type="tip" title="工程建议">
+  生产环境不要把 key 写进仓库，用环境变量或密钥管理系统注入。
+</Callout>
+
+### 4.3 最小代码：用 ChatClient 发起一次对话并打印结果
+
+把下面代码放到应用启动类里（官方示例用 `CommandLineRunner`）：
+
+```java
+@Bean
+public CommandLineRunner runner(ChatClient.Builder builder) {
+	return args -> {
+		ChatClient chatClient = builder.build();
+		String response = chatClient.prompt("Tell me a joke").call().content();
+		System.out.println(response);
+	};
+}
+```
+
+**为什么这样写**
+
+- `ChatClient.Builder` 由 Spring 注入，说明 Starter 已经把底层客户端、认证、默认配置装配好了。
+- `prompt(...).call().content()` 体现了 Spring AI 的 “流畅 API” 设计，风格类似 WebClient/RestClient。
+
+### 4.4 运行与验证
+
+```
+./mvnw spring-boot:run
+```
+
+看到控制台打印出一段模型返回文本，就说明 “最小链路” 打通。
+
+### 4.5 常见的 3 类报错
+
+- **401 / Unauthorized**：key 配错、没生效、或被环境变量覆盖。
+- **连接超时**：网络代理、DNS、出口限制。
+- **模型/接口参数错误**：某些提供商默认模型名不同，需要在配置里显式指定。
+
+## 5. “可移植 API” 能移植到什么程度
+
+| 维度 | 通常可移植（抽象层覆盖） | 通常不可完全移植（需要下钻或做条件分支） |
+| --- | --- | --- |
+| Chat 基本调用 | prompt/messages、同步/流式输出 | 特定模型推理参数、响应字段差异 |
+| Embedding | 生成向量、批量调用思路 | 向量维度、embedding 模型差异带来的迁移成本 |
+| Vector Store | 写入、相似度检索、删除、元数据过滤 API | 各家索引策略、召回/精排、混合检索能力差异 |
+| Tools/Function Calling | “模型发起工具调用 → 应用执行 → 返回结果” 模式 | 工具 schema 约束、并行调用、协议细节差异 |
+| 观测与评估 | 统一埋点/指标思路 | 脱敏、采样、审计要求因团队而异 |
+
+**别把 “统一抽象” 理解成 “完全屏蔽差异”**。正确姿势是先把业务主干写在抽象上，把差异集中在 “配置 + 少量 adapter”，这样未来换模型、换向量库时改动范围才可控。
+
+## 6. 总结
+
+Spring AI 的价值不在于 “又多了一个 SDK”，而在于它把 AI 接入这件事按工程化方式拆成几块：**接模型、接向量数据、接工具、做编排、做观测与评估**。
+
+如果你只想快速验证，本文的 Quickstart 足够你在 Spring Boot 里跑通第一次对话调用。
+
+下一篇我们再一起看看 Spring AI 有哪些核心概念，掌握这些核心概念能帮助你在后续的文章中降低理解成本，而不是一张来就开始 Coding。
