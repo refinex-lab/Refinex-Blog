@@ -114,7 +114,10 @@ export const DocsToc = ({
 
   return (
     <div className="flex h-full flex-col px-4 py-5">
-      <nav className="flex-1 overflow-y-auto overscroll-contain">
+      <nav
+        className="app-scrollbar flex-1 overflow-y-auto overscroll-contain pr-1"
+        style={{ scrollbarGutter: "stable" }}
+      >
         <div className="border-l border-black/10 pl-3 dark:border-white/10">
           {items.map((item) => {
             const isActive = item.id === activeId;

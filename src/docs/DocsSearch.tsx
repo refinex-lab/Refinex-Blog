@@ -110,7 +110,10 @@ export const DocsSearch = () => {
             </Dialog.Close>
           </div>
 
-          <div className="max-h-[56vh] overflow-y-auto px-2 py-2">
+          <div
+            className="app-scrollbar max-h-[56vh] overflow-y-auto px-2 py-2 pr-1"
+            style={{ scrollbarGutter: "stable" }}
+          >
             {query.trim() ? (
               <p className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400">
                 {results.length} results for{" "}
@@ -162,4 +165,3 @@ export const DocsSearch = () => {
     </Dialog.Root>
   );
 };
-

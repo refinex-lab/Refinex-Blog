@@ -176,7 +176,10 @@ export const DocsSidebar = ({ tree }: { tree: DocsNavFolder }) => {
       <div className="px-3 pb-3 pt-4">
         <DocsSearch />
       </div>
-      <nav className="flex-1 overflow-y-auto overscroll-contain px-2 pb-6">
+      <nav
+        className="app-scrollbar flex-1 overflow-y-auto overscroll-contain px-2 pb-6 pr-1"
+        style={{ scrollbarGutter: "stable" }}
+      >
         {tree.children.map((node) => (
           <SidebarNode
             key={`${node.type}:${node.id}`}

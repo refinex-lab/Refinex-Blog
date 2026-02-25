@@ -12,6 +12,10 @@
   --page-bg: #ffffff;
   /* 亮色主题强调色 */
   --accent-color: #B5C7FF;
+  /* 统一滚动条（亮色） */
+  --ui-scrollbar-thumb: rgba(100, 116, 139, 0.42);
+  --ui-scrollbar-thumb-hover: rgba(71, 85, 105, 0.6);
+  --ui-scrollbar-size: 10px;
 }
 
 body {
@@ -27,6 +31,9 @@ body {
   --page-bg: #111113;
   /* 暗色主题强调色 */
   --accent-color: #263872;
+  /* 统一滚动条（暗色） */
+  --ui-scrollbar-thumb: rgba(148, 163, 184, 0.4);
+  --ui-scrollbar-thumb-hover: rgba(148, 163, 184, 0.58);
 }
 
 .json-tool-editor .monaco-scrollable-element > .scrollbar {
@@ -105,39 +112,70 @@ body {
   border-bottom: 1px solid rgba(125, 211, 252, 0.5);
 }
 
+/* 全局页面滚动条基线样式 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-scrollbar-thumb) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: var(--ui-scrollbar-size);
+  height: var(--ui-scrollbar-size);
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-color: var(--ui-scrollbar-thumb);
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ui-scrollbar-thumb-hover);
+}
+
+html::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 统一可复用滚动条样式（tool-scrollbar 保持兼容） */
+.app-scrollbar,
 .tool-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+  scrollbar-color: var(--ui-scrollbar-thumb) transparent;
 }
 
+.app-scrollbar::-webkit-scrollbar,
 .tool-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: var(--ui-scrollbar-size);
+  height: var(--ui-scrollbar-size);
 }
 
+.app-scrollbar::-webkit-scrollbar-track,
 .tool-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.app-scrollbar::-webkit-scrollbar-thumb,
 .tool-scrollbar::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(100, 116, 139, 0.42);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-color: var(--ui-scrollbar-thumb);
 }
 
+.app-scrollbar::-webkit-scrollbar-thumb:hover,
 .tool-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 0.6);
+  background-color: var(--ui-scrollbar-thumb-hover);
 }
 
-.dark .tool-scrollbar {
-  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
-}
-
-.dark .tool-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.38);
-}
-
-.dark .tool-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.56);
+.app-scrollbar::-webkit-scrollbar-corner,
+.tool-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @keyframes home-marquee-left {
