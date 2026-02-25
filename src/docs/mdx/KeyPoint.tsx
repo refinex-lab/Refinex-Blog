@@ -13,7 +13,7 @@ export const KeyPoint = ({
       <div className="flex gap-2.5">
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-zinc-700 dark:text-zinc-200" />
         <div className="min-w-0">
-          <p className="mb-1 text-sm font-semibold">{title}</p>
+          <div className="mb-1 text-sm font-semibold leading-6">{title}</div>
           <div className="text-sm leading-7 text-zinc-800 dark:text-zinc-200">
             {children}
           </div>
@@ -22,4 +22,3 @@ export const KeyPoint = ({
     </div>
   );
 };
-

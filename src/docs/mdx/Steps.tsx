@@ -13,7 +13,9 @@ export const Step = (_props: StepProps) => {
 };
 
 const isStepElement = (node: unknown): node is ReactElement<StepProps> => {
-  return isValidElement(node) && node.type === Step;
+  if (!isValidElement(node)) return false;
+  const props = node.props as Partial<StepProps> | null;
+  return typeof props?.title === "string";
 };
 
 export const Steps = ({ children }: { children: ReactNode }) => {
@@ -29,10 +31,10 @@ export const Steps = ({ children }: { children: ReactNode }) => {
               {idx + 1}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="m-0 flex h-7 items-center text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              <div className="flex h-7 items-center text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-50">
                 {step.props.title}
-              </p>
-              <div className="mt-2 text-sm leading-7 text-zinc-700 dark:text-zinc-200">
+              </div>
+              <div className="mt-2 text-sm leading-7 text-zinc-700 dark:text-zinc-200 [&_p]:m-0 [&_p]:leading-7">
                 {step.props.children}
               </div>
             </div>

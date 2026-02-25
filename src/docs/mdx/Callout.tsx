@@ -53,9 +53,9 @@ export const Callout = ({
 
   const header = useMemo(() => {
     const titleNode = title ? (
-      <p className="text-sm font-semibold">{title}</p>
+      <div className="text-sm font-semibold leading-6">{title}</div>
     ) : (
-      <p className="text-sm font-semibold">{type.toUpperCase()}</p>
+      <div className="text-sm font-semibold leading-6">{type.toUpperCase()}</div>
     );
 
     return (
@@ -83,7 +83,7 @@ export const Callout = ({
         <div className="flex gap-2.5">
           {iconByType[type]}
           <div className="min-w-0">
-            {title ? <p className="mb-1 text-sm font-semibold">{title}</p> : null}
+            {title ? <div className="text-sm font-semibold leading-6">{title}</div> : null}
             <div className="text-sm leading-7">{children}</div>
           </div>
         </div>
