@@ -7,6 +7,7 @@ export type ContentDoc = {
   createdAt?: string;
   updatedAt?: string;
   order: number;
+  icon?: string;
   sourcePath: string;
   raw: string;
   body: string;
@@ -18,6 +19,7 @@ export type DocsNavFolder = {
   id: string;
   title: string;
   order: number;
+  icon?: string;
   children: DocsNavNode[];
 };
 
@@ -28,6 +30,7 @@ export type DocsNavDocItem = {
   title: string;
   description?: string;
   order: number;
+  icon?: string;
   href: string;
 };
 
@@ -37,6 +40,7 @@ export type DocsNavPageItem = {
   title: string;
   description?: string;
   order: number;
+  icon?: string;
   href: string;
 };
 

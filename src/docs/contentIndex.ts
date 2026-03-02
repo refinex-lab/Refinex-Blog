@@ -1,4 +1,5 @@
 import { docsCustomPages } from "./customPages";
+import { docsIconMap } from "./docsIcons";
 import type {
   ContentDoc,
   DocsNavFolder,
@@ -153,6 +154,8 @@ const parseMdDoc = (modulePath: string, raw: string): ContentDoc => {
   const fmOrder = toNumberOrInfinity(parsed.data.order);
   const finalOrder = Number.isFinite(fmOrder) ? fmOrder : order;
 
+  const icon = asText(parsed.data.icon);
+
   return {
     slug,
     title,
@@ -162,6 +165,7 @@ const parseMdDoc = (modulePath: string, raw: string): ContentDoc => {
     createdAt,
     updatedAt,
     order: finalOrder,
+    icon,
     sourcePath,
     raw,
     body: parsed.body.trim(),
@@ -218,6 +222,8 @@ const parseMdxDoc = (modulePath: string): ContentDoc => {
   const fmOrder = toNumberOrInfinity(data.order ?? parsed.data.order);
   const finalOrder = Number.isFinite(fmOrder) ? fmOrder : order;
 
+  const icon = asText(data.icon ?? parsed.data.icon);
+
   return {
     slug,
     title,
@@ -227,6 +233,7 @@ const parseMdxDoc = (modulePath: string): ContentDoc => {
     createdAt,
     updatedAt,
     order: finalOrder,
+    icon,
     sourcePath,
     raw,
     body: parsed.body.trim(),
@@ -259,6 +266,7 @@ const createFolder = (id: string, title: string, order: number): DocsNavFolder =
   id,
   title,
   order,
+  icon: docsIconMap[id],
   children: [],
 });
 
@@ -315,6 +323,7 @@ const buildDocsNavTree = (): DocsNavFolder => {
       title: page.title,
       description: page.description,
       order: page.order,
+      icon: docsIconMap[page.slug],
       href: `${getDocHref(page.slug)}`,
     };
     root.children.push(leaf);
@@ -338,6 +347,7 @@ const buildDocsNavTree = (): DocsNavFolder => {
       title: doc.title,
       description: doc.description,
       order: doc.order,
+      icon: doc.icon ?? docsIconMap[doc.slug],
       href: getDocHref(doc.slug),
     };
 
