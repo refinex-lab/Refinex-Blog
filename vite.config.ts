@@ -16,6 +16,26 @@ const monacoEditorPlugin =
 export default defineConfig({
   build: {
     outDir: "refinex-blog",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 核心框架单独打包
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          // UI 组件库单独打包
+          "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-hover-card"],
+          // 图标库单独打包
+          "vendor-icons": ["lucide-react", "react-icons"],
+          // Monaco Editor 单独打包（大型依赖）
+          "vendor-monaco": ["@monaco-editor/react", "monaco-editor"],
+          // Excalidraw 单独打包（大型依赖）
+          "vendor-excalidraw": ["@excalidraw/excalidraw"],
+        },
+      },
+    },
+    // 启用 CSS 代码分割
+    cssCodeSplit: true,
+    // 提高 chunk 大小警告阈值
+    chunkSizeWarningLimit: 1000,
   },
   plugins: [
     // Compile `.mdx` to React components at build time.
