@@ -95,8 +95,6 @@ export const siteConfig: SiteConfig = {
   ],
   // 菜单
   menu: [
-    { label: "归档", href: "/" },
-    { label: "标签", href: "/" },
     { label: "友链", href: "/" },
     { label: "RSS", href: "/" },
   ],

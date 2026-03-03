@@ -14,7 +14,7 @@ import {
 } from "@radix-ui/react-icons";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as HoverCard from "@radix-ui/react-hover-card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { profile } from "../../config/profile";
 import { Avatar } from "../../components/ui/Avatar";
 import { Card } from "../../components/ui/Card";
@@ -44,15 +44,28 @@ const LinkIcon = ({
 }: (typeof profile.links)[number]) => {
   const Icon = linkIconMap[icon] ?? GlobeIcon;
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={label}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-black/5 bg-white/70 text-slate-600 transition-colors hover:border-black/20 hover:bg-white hover:text-slate-900 dark:border-white/10 dark:bg-white/10 dark:text-slate-100 dark:hover:border-white/25 dark:hover:bg-white/15"
-    >
-      <Icon className="h-5 w-5" />
-    </a>
+    <HoverCard.Root openDelay={200}>
+      <HoverCard.Trigger asChild>
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={label}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-black/5 bg-white/70 text-slate-600 transition-all hover:border-black/20 hover:bg-white hover:text-slate-900 hover:scale-105 dark:border-white/10 dark:bg-white/10 dark:text-slate-100 dark:hover:border-white/25 dark:hover:bg-white/15"
+        >
+          <Icon className="h-5 w-5" />
+        </a>
+      </HoverCard.Trigger>
+      <HoverCard.Portal>
+        <HoverCard.Content
+          sideOffset={8}
+          className="rounded-lg border border-black/10 bg-white/95 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-lg backdrop-blur dark:border-white/10 dark:bg-slate-900/95 dark:text-slate-100"
+        >
+          {label}
+          <HoverCard.Arrow className="fill-white dark:fill-slate-900" />
+        </HoverCard.Content>
+      </HoverCard.Portal>
+    </HoverCard.Root>
   );
 };
 

@@ -1,16 +1,20 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import {
   ChevronDown,
   Github,
   Library,
   Moon,
+  Menu,
   MessageCircle,
   Rss,
   Sparkles,
   Sun,
   Twitter,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 import { siteConfig } from "./config/site";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { useTheme } from "./providers/useTheme";
@@ -111,6 +115,96 @@ const IconLink = ({ icon, label, href }: (typeof siteConfig.icons)[number]) => {
   );
 };
 
+const MobileMenu = () => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <button
+          type="button"
+          aria-label="打开菜单"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50 md:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed left-0 top-0 z-50 h-full w-[85vw] max-w-sm border-r border-black/5 bg-white p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left dark:border-white/10 dark:bg-slate-950">
+          <div className="flex items-center justify-between">
+            <Dialog.Title className="text-lg font-semibold text-slate-900 dark:text-white">
+              菜单
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                aria-label="关闭菜单"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </Dialog.Close>
+          </div>
+
+          <nav className="mt-8 flex flex-col gap-1">
+            {siteConfig.nav.map((item) => (
+              <NavLink
+                key={item.label}
+                to={item.href}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+            <div className="my-2 h-px bg-black/5 dark:bg-white/10" />
+            {siteConfig.menu.map((item) =>
+              item.href.startsWith("/") ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="rounded-lg px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                >
+                  {item.label}
+                </a>
+              )
+            )}
+          </nav>
+
+          <div className="absolute bottom-6 left-6 right-6">
+            <div className="flex items-center justify-between rounded-xl border border-black/5 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-slate-900/50">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                社交链接
+              </span>
+              <div className="flex items-center gap-2">
+                {siteConfig.icons.map((item) => (
+                  <IconLink key={item.label} {...item} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
+
 const Header = () => {
   return (
     <header
@@ -120,15 +214,15 @@ const Header = () => {
           "color-mix(in srgb, var(--page-bg) 75%, transparent)",
       }}
     >
-      <div className="flex w-full items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-4">
+      <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link
             to={siteConfig.logo.href}
-            className="flex items-center gap-4"
+            className="flex items-center gap-2 sm:gap-4"
             aria-label={`${siteConfig.title} 首页`}
           >
             <LogoMark />
-            <div className="leading-tight">
+            <div className="hidden leading-tight sm:block">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 {siteConfig.title}
               </p>
@@ -139,7 +233,8 @@ const Header = () => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Desktop Navigation */}
           <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
             {siteConfig.nav.map((item) => (
               <NavLink
@@ -158,11 +253,12 @@ const Header = () => {
             ))}
           </nav>
 
+          {/* Desktop More Menu */}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/70 px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-gray-800/70 dark:text-slate-200 dark:hover:bg-gray-900 dark:hover:text-white"
+                className="hidden items-center gap-2 rounded-lg border border-slate-200/70 bg-white/70 px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-gray-800/70 dark:text-slate-200 dark:hover:bg-gray-900 dark:hover:text-white md:inline-flex"
               >
                 更多
                 <ChevronDown className="h-4 w-4" />
@@ -197,6 +293,7 @@ const Header = () => {
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
 
+          {/* AI Entry - Always visible */}
           <NavLink
             to="/ai"
             aria-label="AI 入口"
@@ -211,10 +308,18 @@ const Header = () => {
             <Sparkles className="h-5 w-5" />
           </NavLink>
 
-          {siteConfig.icons.map((item) => (
-            <IconLink key={item.label} {...item} />
-          ))}
+          {/* Desktop Social Icons */}
+          <div className="hidden items-center gap-2 md:flex">
+            {siteConfig.icons.map((item) => (
+              <IconLink key={item.label} {...item} />
+            ))}
+          </div>
+
+          {/* Theme Toggle - Always visible */}
           {siteConfig.theme.enableToggle ? <ThemeToggle /> : null}
+
+          {/* Mobile Menu */}
+          <MobileMenu />
         </div>
       </div>
     </header>
