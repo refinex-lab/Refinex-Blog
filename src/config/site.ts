@@ -95,7 +95,7 @@ export const siteConfig: SiteConfig = {
   ],
   // 菜单
   menu: [
-    { label: "友链", href: "/" },
+    { label: "友链", href: "/friends" },
     { label: "RSS", href: "/" },
   ],
   // 顶部图标组（可按需扩展）

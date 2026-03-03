@@ -20,6 +20,7 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { useTheme } from "./providers/useTheme";
 import { AboutPage } from "./pages/about/AboutPage";
 import { AiHubPage } from "./pages/ai/AiHubPage";
+import { FriendsPage } from "./pages/friends/FriendsPage";
 import { ToolsPage } from "./pages/tools/ToolsPage";
 import { JsonToolPage } from "./pages/tools/JsonToolPage";
 import { DiffToolPage } from "./pages/tools/DiffToolPage";
@@ -370,6 +371,7 @@ const AppShell = () => {
           <Route path="/tools/mime" element={<MimeToolPage />} />
           <Route path="/tools/http-header" element={<HttpHeaderToolPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/friends" element={<FriendsPage />} />
         </Routes>
       </main>
       {isDocs ? null : (
