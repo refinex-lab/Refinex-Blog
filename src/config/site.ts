@@ -53,6 +53,16 @@ export type SiteConfig = {
     meta: string[];
     // 页脚链接
     links: SiteNavItem[];
+    // ICP 备案
+    icp?: {
+      number: string;
+      href: string;
+    };
+    // 网安备案
+    gaba?: {
+      number: string;
+      href: string;
+    };
   };
   home?: {
     title: string;
@@ -118,6 +128,14 @@ export const siteConfig: SiteConfig = {
       { label: "使用条款", href: "/" },
       { label: "联系我", href: "/" },
     ],
+    icp: {
+      number: "黔ICP备2026002771号",
+      href: "https://beian.miit.gov.cn",
+    },
+    gaba: {
+      number: "黔公网安备XXXXXXXXXXXXXXXX号",
+      href: "https://beian.mps.gov.cn/#/query/webSearch",
+    },
   },
   home: {
     title: "Refinex Blog",

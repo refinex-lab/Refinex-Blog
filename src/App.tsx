@@ -275,33 +275,60 @@ const AppShell = () => {
               "color-mix(in srgb, var(--page-bg) 75%, transparent)",
           }}
         >
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-2">
-              <p className="font-medium text-slate-700 dark:text-white">
-                {siteConfig.footer.copyright}
-              </p>
-              <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-300">
-                {siteConfig.footer.meta.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full bg-black/5 px-2 py-1 dark:bg-white/10"
+          <div className="mx-auto w-full max-w-6xl px-6">
+            {/* 上段：版权信息 + 页脚链接 */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1.5">
+                <p className="font-medium text-slate-700 dark:text-white">
+                  {siteConfig.footer.copyright}
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {siteConfig.footer.meta.join(" · ")}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {siteConfig.footer.links.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   >
-                    {item}
-                  </span>
+                    {item.label}
+                  </a>
                 ))}
               </div>
             </div>
-            <div className="flex flex-wrap gap-4">
-              {siteConfig.footer.links.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
+
+            {/* 下段：备案信息居中 */}
+            {(siteConfig.footer.icp || siteConfig.footer.gaba) && (
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-black/5 pt-5 text-xs text-slate-400 dark:border-white/5 dark:text-slate-500">
+                {siteConfig.footer.icp && (
+                  <a
+                    href={siteConfig.footer.icp.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+                  >
+                    <img src="/footer/icp.png" alt="ICP" className="h-4 w-4 object-contain opacity-70" />
+                    {siteConfig.footer.icp.number}
+                  </a>
+                )}
+                {siteConfig.footer.icp && siteConfig.footer.gaba && (
+                  <span className="hidden h-3 w-px bg-slate-300 dark:bg-slate-700 sm:block" />
+                )}
+                {siteConfig.footer.gaba && (
+                  <a
+                    href={siteConfig.footer.gaba.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+                  >
+                    <img src="/footer/gaba.png" alt="网安备案" className="h-4 w-4 object-contain opacity-70" />
+                    {siteConfig.footer.gaba.number}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </footer>
       )}
