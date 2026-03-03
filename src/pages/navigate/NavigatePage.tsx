@@ -3,9 +3,11 @@ import {
   FiArrowUpRight,
   FiCheck,
   FiChevronDown,
+  FiFilter,
   FiSearch,
   FiX,
 } from "react-icons/fi";
+import * as Dialog from "@radix-ui/react-dialog";
 import { navigateConfig, type NavigateCategory } from "../../config/navigate";
 import { Card } from "../../components/ui/Card";
 import { IconFont } from "../../components/ui/IconFont";
@@ -174,6 +176,7 @@ export const NavigatePage = () => {
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY_ID);
   const [engine, setEngine] = useState<SearchEngine>("site");
   const [engineOpen, setEngineOpen] = useState(false);
+  const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
   const engineRef = useRef<HTMLDivElement | null>(null);
 
   const isSiteSearch = engine === "site";
@@ -284,7 +287,7 @@ export const NavigatePage = () => {
 
   return (
     <>
-      <div className="mx-auto flex h-[calc(100vh-72px)] w-full flex-col gap-4 overflow-hidden px-6 py-6 lg:py-8">
+      <div className="mx-auto flex h-[calc(100vh-72px)] w-full flex-col gap-3 overflow-hidden px-4 py-4 sm:px-6 sm:py-6 lg:gap-4 lg:py-8">
         <div className="p-0">
           <form
             className="flex flex-col gap-3"
@@ -402,8 +405,98 @@ export const NavigatePage = () => {
           </form>
         </div>
 
-        <div className="grid h-full min-h-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="h-full">
+        {/* Mobile Category Filter Button */}
+        <div className="flex items-center justify-between lg:hidden">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCategoryDrawerOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-slate-700 backdrop-blur transition-colors hover:bg-white dark:border-white/10 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:bg-slate-900"
+            >
+              <FiFilter className="h-4 w-4" />
+              <span>
+                {categories.find((c) => c.id === activeCategory)?.label ?? "全部"}
+              </span>
+              <span className="rounded-full bg-black/10 px-2 py-0.5 text-xs font-semibold dark:bg-white/10">
+                {categoryCountMap.get(activeCategory) ?? 0}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Category Drawer */}
+        <Dialog.Root open={categoryDrawerOpen} onOpenChange={setCategoryDrawerOpen}>
+          <Dialog.Portal>
+            <Dialog.Content className="fixed bottom-0 left-0 right-0 z-50 max-h-[70vh] rounded-t-2xl border-t border-black/5 bg-white/95 shadow-2xl backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom dark:border-white/10 dark:bg-slate-950/95 lg:hidden">
+              <div className="flex items-center justify-between border-b border-black/5 px-5 py-3 dark:border-white/10">
+                <Dialog.Title className="text-base font-semibold text-slate-900 dark:text-white">
+                  分类筛选
+                </Dialog.Title>
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                    aria-label="关闭分类"
+                  >
+                    <FiX className="h-4 w-4" />
+                  </button>
+                </Dialog.Close>
+              </div>
+              <div className="max-h-[calc(70vh-52px)] space-y-1 overflow-y-auto px-5 py-3">
+                {categories.map((cat) => {
+                  const count = categoryCountMap.get(cat.id) ?? 0;
+                  const disabled = cat.id !== ALL_CATEGORY_ID && count === 0;
+                  return (
+                    <CategoryButton
+                      key={cat.id}
+                      label={cat.label}
+                      count={count}
+                      active={activeCategory === cat.id}
+                      disabled={disabled}
+                      onClick={() => {
+                        setActiveCategory(cat.id);
+                        setCategoryDrawerOpen(false);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              {pinnedSites.length ? (
+                <div className="border-t border-black/5 px-5 py-3 dark:border-white/10">
+                  <p className="mb-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    置顶站点
+                  </p>
+                  <div className="space-y-2">
+                    {pinnedSites.map((site) => (
+                      <a
+                        key={site.id}
+                        href={site.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setCategoryDrawerOpen(false)}
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70 dark:hover:text-white"
+                      >
+                        <SiteIcon
+                          title={site.title}
+                          iconSrc={site.iconSrc}
+                          iconFontId={site.iconFontId}
+                          iconFontClass={site.iconFontClass}
+                          size={32}
+                        />
+                        <span className="truncate text-xs font-semibold">
+                          {site.title}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+
+        <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="hidden h-full lg:block">
           <Card className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
             <div className="space-y-1">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
@@ -463,13 +556,13 @@ export const NavigatePage = () => {
         </Card>
       </aside>
 
-        <section className="tool-scrollbar h-full space-y-4 overflow-y-auto pr-3 pb-4">
+        <section className="tool-scrollbar h-full space-y-3 overflow-y-auto pb-4 pr-2 sm:space-y-4 sm:pr-3">
           {activeCategory !== ALL_CATEGORY_ID ? (
             <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg dark:text-white">
                 {categories.find((item) => item.id === activeCategory)?.label}
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-200/70">
+              <p className="text-xs text-slate-500 sm:text-sm dark:text-slate-200/70">
                 {
                   categories.find((item) => item.id === activeCategory)
                     ?.description
@@ -479,7 +572,7 @@ export const NavigatePage = () => {
           ) : null}
 
           {visibleSites.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
               {visibleSites.map((site) => {
                 const hostname = getHostname(site.href);
                 const description = truncate(site.description, 56);
@@ -489,22 +582,23 @@ export const NavigatePage = () => {
                     href={site.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative flex h-full flex-col justify-between rounded-2xl border border-black/5 bg-white/80 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-black/10 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:border-slate-700/60 dark:bg-slate-900/55 dark:hover:border-slate-600/80 dark:hover:bg-slate-900/80 dark:focus-visible:ring-slate-500/60"
+                    className="group relative flex h-full flex-col justify-between rounded-2xl border border-black/5 bg-white/80 p-3 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-black/10 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:p-4 dark:border-slate-700/60 dark:bg-slate-900/55 dark:hover:border-slate-600/80 dark:hover:bg-slate-900/80 dark:focus-visible:ring-slate-500/60"
                   >
                     <div>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-start justify-between gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <SiteIcon
                             title={site.title}
                             iconSrc={site.iconSrc}
                             iconFontId={site.iconFontId}
                             iconFontClass={site.iconFontClass}
+                            size={40}
                           />
                           <div className="min-w-0">
-                            <p className="truncate text-[15px] font-semibold text-slate-900 dark:text-slate-50">
+                            <p className="truncate text-sm font-semibold text-slate-900 sm:text-[15px] dark:text-slate-50">
                               {site.title}
                             </p>
-                            <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-200/70">
+                            <p className="mt-0.5 truncate text-[11px] text-slate-500 sm:mt-1 sm:text-xs dark:text-slate-200/70">
                               {hostname}
                             </p>
                           </div>
@@ -512,13 +606,13 @@ export const NavigatePage = () => {
 
                       </div>
 
-                      <p className="mt-3 line-clamp-2 text-[13px] leading-6 text-slate-600 dark:text-slate-200/85">
+                      <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600 sm:mt-3 sm:text-[13px] sm:leading-6 dark:text-slate-200/85">
                         {description}
                       </p>
                     </div>
-                    <span className="pointer-events-none absolute bottom-3 right-3 inline-flex translate-y-1 items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 dark:bg-slate-800 dark:text-slate-100">
+                    <span className="pointer-events-none absolute bottom-2 right-2 inline-flex translate-y-1 items-center gap-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-semibold text-white opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 sm:bottom-3 sm:right-3 sm:px-2.5 sm:py-1 sm:text-[11px] dark:bg-slate-800 dark:text-slate-100">
                       前往
-                      <FiArrowUpRight className="h-3 w-3" />
+                      <FiArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     </span>
                   </a>
                 );
