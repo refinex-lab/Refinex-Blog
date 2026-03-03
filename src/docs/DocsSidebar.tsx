@@ -26,14 +26,17 @@ const findAncestorFoldersByHref = (
 const SidebarItem = ({
   item,
   depth,
+  onNavigate,
 }: {
   item: DocsNavItem;
   depth: number;
+  onNavigate?: () => void;
 }) => {
   const paddingLeft = 12 + depth * 12;
   return (
     <NavLink
       to={item.href}
+      onClick={onNavigate}
       className={({ isActive }) =>
         `flex w-full items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
           isActive
@@ -61,6 +64,7 @@ const SidebarFolder = ({
   openIds,
   manuallyClosedIds,
   onToggle,
+  onNavigate,
 }: {
   folder: DocsNavFolder;
   depth: number;
@@ -68,6 +72,7 @@ const SidebarFolder = ({
   openIds: Set<string>;
   manuallyClosedIds: Set<string>;
   onToggle: (id: string) => void;
+  onNavigate?: () => void;
 }) => {
   const isTopLevel = depth === 0;
   const isOpen =
@@ -127,6 +132,7 @@ const SidebarFolder = ({
               openIds={openIds}
               manuallyClosedIds={manuallyClosedIds}
               onToggle={onToggle}
+              onNavigate={onNavigate}
             />
           ))}
         </div>
@@ -142,6 +148,7 @@ const SidebarNode = ({
   openIds,
   manuallyClosedIds,
   onToggle,
+  onNavigate,
 }: {
   node: DocsNavNode;
   depth: number;
@@ -149,6 +156,7 @@ const SidebarNode = ({
   openIds: Set<string>;
   manuallyClosedIds: Set<string>;
   onToggle: (id: string) => void;
+  onNavigate?: () => void;
 }) => {
   if (node.type === "folder") {
     return (
@@ -159,13 +167,14 @@ const SidebarNode = ({
         openIds={openIds}
         manuallyClosedIds={manuallyClosedIds}
         onToggle={onToggle}
+        onNavigate={onNavigate}
       />
     );
   }
-  return <SidebarItem item={node} depth={depth} />;
+  return <SidebarItem item={node} depth={depth} onNavigate={onNavigate} />;
 };
 
-export const DocsSidebar = ({ tree }: { tree: DocsNavFolder }) => {
+export const DocsSidebar = ({ tree, onNavigate }: { tree: DocsNavFolder; onNavigate?: () => void }) => {
   const location = useLocation();
   const forcedOpenIds = useMemo(() => {
     const href = location.pathname;
@@ -232,6 +241,7 @@ export const DocsSidebar = ({ tree }: { tree: DocsNavFolder }) => {
             openIds={openIds}
             manuallyClosedIds={manuallyClosedIds}
             onToggle={toggleFolder}
+            onNavigate={onNavigate}
           />
         ))}
       </nav>

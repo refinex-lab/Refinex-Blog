@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { ArrowUp, ChevronLeft, ChevronRight, List, X } from "lucide-react";
+import { ArrowUp, ChevronLeft, ChevronRight, GripVertical, List, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { docsCustomPages } from "../../docs/customPages";
 import { DocsSidebar } from "../../docs/DocsSidebar";
@@ -25,6 +25,52 @@ const decodeDocsSlug = (pathname: string) => {
 };
 
 const allNavItems = flattenDocsNavItems(docsNavTree);
+
+function MobileSidebarDrawer({ tree }: { tree: typeof docsNavTree }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* Floating trigger button - minimal design */}
+      {!open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="打开侧边栏"
+          className="fixed left-0 top-1/2 z-40 -translate-y-1/2 py-3 pl-1 pr-2 text-slate-400 transition-colors hover:text-slate-700 dark:text-slate-600 dark:hover:text-slate-300 md:hidden"
+        >
+          <GripVertical className="h-5 w-5" />
+        </button>
+      )}
+
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Portal>
+          <Dialog.Content className="fixed left-0 top-0 z-50 h-full w-[85vw] max-w-sm border-r border-black/5 bg-white shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left dark:border-white/10 dark:bg-slate-950 md:hidden">
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-black/5 px-4 py-3 dark:border-white/10">
+                <Dialog.Title className="text-base font-semibold text-slate-900 dark:text-white">
+                  文档导航
+                </Dialog.Title>
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                    aria-label="关闭侧边栏"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </Dialog.Close>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <DocsSidebar tree={tree} onNavigate={() => setOpen(false)} />
+              </div>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
+  );
+}
 
 function MobileTocDrawer({
   contentRef,
@@ -200,6 +246,9 @@ export const DocsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Mobile Sidebar Trigger */}
+      <MobileSidebarDrawer tree={docsNavTree} />
+
       <div className={`grid min-h-[calc(100vh-72px)] grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] ${hideToc ? "" : "xl:grid-cols-[280px_minmax(0,1fr)_248px]"}`}>
         <aside className="sticky top-[72px] hidden h-[calc(100vh-72px)] border-r border-black/5 bg-white/55 backdrop-blur dark:border-white/10 dark:bg-black/20 md:block">
           <DocsSidebar tree={docsNavTree} />
