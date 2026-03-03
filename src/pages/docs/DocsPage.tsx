@@ -1,6 +1,6 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { docsCustomPages } from "../../docs/customPages";
 import { DocsSidebar } from "../../docs/DocsSidebar";
 import { DocsToc } from "../../docs/DocsToc";
@@ -78,6 +78,26 @@ export const DocsPage = () => {
   const location = useLocation();
   const slug = useMemo(() => decodeDocsSlug(location.pathname), [location.pathname]);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Auto scroll to top when slug changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [slug]);
+
+  // Show/hide back to top button based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (!slug) {
     return <Navigate to="/docs/overview" replace />;
@@ -150,6 +170,18 @@ export const DocsPage = () => {
           </aside>
         )}
       </div>
+
+      {/* Back to top button */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="回到顶部"
+          className="fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg backdrop-blur transition-all hover:bg-slate-900 hover:scale-110 dark:bg-slate-100/90 dark:text-slate-900 dark:hover:bg-slate-100"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
+      )}
     </div>
   );
 };
