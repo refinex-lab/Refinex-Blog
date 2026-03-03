@@ -14,6 +14,9 @@ const monacoEditorPlugin =
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    outDir: "refinex-blog",
+  },
   plugins: [
     // Compile `.mdx` to React components at build time.
     // Must run before the React plugin (MDX outputs JSX).
