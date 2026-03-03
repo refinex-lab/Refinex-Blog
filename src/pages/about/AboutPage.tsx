@@ -14,7 +14,7 @@ import {
 } from "@radix-ui/react-icons";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as HoverCard from "@radix-ui/react-hover-card";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { profile } from "../../config/profile";
 import { Avatar } from "../../components/ui/Avatar";
 import { Card } from "../../components/ui/Card";
