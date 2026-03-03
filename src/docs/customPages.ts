@@ -14,7 +14,7 @@ export type DocsCustomPage = {
 export const docsCustomPages: DocsCustomPage[] = [
   {
     slug: "overview",
-    title: "文档中心",
+    title: "Overview",
     description: "浏览所有文档分类与近期更新",
     order: 0,
     component: OverviewPage,

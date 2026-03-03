@@ -20,7 +20,13 @@
  */
 export const docsIconMap: Record<string, string> = {
   // 在此添加你的图标映射
+  "overview": "icon-fenzhongxin",
+
   "软件手册/Github Copilot": "icon-github",
   "软件手册/Claude Code": "icon-Claude",
   "Spring 生态/Spring AI": "icon-spring",
+
+  "搭建本站/快速上手": "icon-kuaisushangshou",
+  "搭建本站/配置手册": "icon-peizhi",
+  "搭建本站/站点部署": "icon-bushu",
 };
