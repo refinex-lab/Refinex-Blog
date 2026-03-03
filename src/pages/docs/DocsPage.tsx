@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUp, ChevronLeft, ChevronRight, List, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { docsCustomPages } from "../../docs/customPages";
 import { DocsSidebar } from "../../docs/DocsSidebar";
 import { DocsToc } from "../../docs/DocsToc";
@@ -24,6 +25,51 @@ const decodeDocsSlug = (pathname: string) => {
 };
 
 const allNavItems = flattenDocsNavItems(docsNavTree);
+
+function MobileTocDrawer({
+  contentRef,
+  docKey,
+}: {
+  contentRef: React.RefObject<HTMLDivElement | null>;
+  docKey: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <button
+          type="button"
+          aria-label="打开目录"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg backdrop-blur transition-all hover:scale-110 hover:bg-slate-900 dark:bg-slate-100/90 dark:text-slate-900 dark:hover:bg-slate-100 md:h-12 md:w-12"
+        >
+          <List className="h-4 w-4 md:h-5 md:w-5" />
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Content className="fixed bottom-0 left-0 right-0 z-50 max-h-[70vh] rounded-t-2xl border-t border-black/5 bg-white/95 shadow-2xl backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom dark:border-white/10 dark:bg-slate-950/95">
+          <div className="flex items-center justify-between border-b border-black/5 px-5 py-3 dark:border-white/10">
+            <Dialog.Title className="text-base font-semibold text-slate-900 dark:text-white">
+              目录
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                aria-label="关闭目录"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </Dialog.Close>
+          </div>
+          <div className="max-h-[calc(70vh-52px)] overflow-y-auto px-5 py-3">
+            <DocsToc contentRef={contentRef} docKey={docKey} onItemClick={() => setOpen(false)} />
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
 
 function DocsPrevNext({ slug }: { slug: string }) {
   const idx = allNavItems.findIndex(
@@ -171,17 +217,20 @@ export const DocsPage = () => {
         )}
       </div>
 
-      {/* Back to top button */}
-      {showBackToTop && (
-        <button
-          type="button"
-          onClick={scrollToTop}
-          aria-label="回到顶部"
-          className="fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg backdrop-blur transition-all hover:bg-slate-900 hover:scale-110 dark:bg-slate-100/90 dark:text-slate-900 dark:hover:bg-slate-100"
-        >
-          <ArrowUp className="h-5 w-5" />
-        </button>
-      )}
+      {/* Mobile floating buttons - right side */}
+      <div className="fixed bottom-8 right-6 z-40 flex flex-col gap-3 xl:hidden">
+        {!hideToc && <MobileTocDrawer contentRef={contentRef} docKey={docKey} />}
+        {showBackToTop && (
+          <button
+            type="button"
+            onClick={scrollToTop}
+            aria-label="回到顶部"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg backdrop-blur transition-all hover:scale-110 hover:bg-slate-900 dark:bg-slate-100/90 dark:text-slate-900 dark:hover:bg-slate-100 md:h-12 md:w-12"
+          >
+            <ArrowUp className="h-4 w-4 md:h-5 md:w-5" />
+          </button>
+        )}
+      </div>
     </div>
   );
 };

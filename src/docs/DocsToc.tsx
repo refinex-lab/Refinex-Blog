@@ -23,9 +23,11 @@ const buildTocItems = (root: HTMLElement): TocItem[] => {
 export const DocsToc = ({
   contentRef,
   docKey,
+  onItemClick,
 }: {
   contentRef: RefObject<HTMLElement | null>;
   docKey: string;
+  onItemClick?: () => void;
 }) => {
   const [items, setItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
@@ -125,6 +127,7 @@ export const DocsToc = ({
               <a
                 key={item.id}
                 href={`#${item.id}`}
+                onClick={onItemClick}
                 className={`relative -ml-[13px] block rounded-md py-1.5 pl-4 text-sm transition-colors ${
                   item.level === 3 ? "pl-7" : ""
                 } ${
