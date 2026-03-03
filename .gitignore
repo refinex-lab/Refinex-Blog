@@ -26,3 +26,6 @@ dist-ssr
 
 # AI generated files
 CLAUDE.md
+
+# build output refinex-blog
+refinex-blog/
